@@ -44,9 +44,9 @@
                                                     <th>#</th>
                                                     <th>تصویر</th>
                                                     <th>عنوان</th>
-                                                    <th>نویسنده</th>
+                                                    <th>دسته‌بندی</th>
                                                     <th>وضعیت</th>
-                                                    <th>تاریخ ایجاد</th>
+                                                    <th>تاریخ انتشار</th>
                                                     <th>عملیات</th>
                                                 </tr>
                                             </thead>
@@ -60,7 +60,7 @@
                                                                 style="width: 80px; height: 50px; object-fit: cover;">
                                                         </td>
                                                         <td>{{ $blog->title }}</td>
-                                                        <td>{{ $blog->author ?? 'نامشخص' }}</td>
+                                                        <td>{{ $blog->category->name ?? 'بدون دسته‌بندی' }}</td>
                                                         <td>
                                                             @if ($blog->status == 'published')
                                                                 <span class="badge bg-label-success">منتشر شده</span>
@@ -70,7 +70,7 @@
                                                                 <span class="badge bg-label-warning">آرشیو شده</span>
                                                             @endif
                                                         </td>
-                                                        <td>{{ \Morilog\Jalali\Jalalian::fromCarbon($blog->created_at)->format('Y/m/d') }}
+                                                        <td>{{ $blog->date ? \Morilog\Jalali\Jalalian::fromCarbon($blog->date)->format('Y/m/d') : '---' }}
                                                         </td>
                                                         <td>
                                                             <a class="btn btn-sm btn-primary"

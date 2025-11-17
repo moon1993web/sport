@@ -13,20 +13,19 @@ return new class extends Migration
     {
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
-            $table->string('image')->nullable();
             $table->string('title');
-            $table->date('date');
-            $table->string('author')->nullable();
+            $table->string('slug')->unique();
+            $table->string('image')->nullable();
             $table->text('short_description');
-            $table->longText('content')->nullable();
-            $table->string('tags')->nullable();
-            $table->unsignedBigInteger('category_id')->nullable();
-
-            // 2. محدودیت کلید خارجی را تعریف می‌کنیم
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
-                
-               // اگر یک دسته بندی حذف شد، مقدار این فیلد در بلاگ‌های مرتبط null می‌شود
-            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->longText('content');
+            $table->text('tags')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
+            $table->string('author')->nullable();
+            $table->enum('status', ['draft', 'published', 'scheduled'])->default('draft');
+            $table->date('date');
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->text('meta_keywords')->nullable();
             $table->timestamps();
         });
     }
@@ -36,7 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-      Schema::dropIfExists('blogs');
+        Schema::dropIfExists('blogs');
     }
- 
 };

@@ -10,23 +10,26 @@ class Blog extends Model
     protected $table = 'blogs'; // نام جدول در دیتابیس
 
     protected $fillable = [
-        'image',
         'title',
-        'date',
-        'author',
-        'short_description',
-        'content',
-        'tags',
-        'category_id',
-        'status',
+    'slug',
+    'image',
+    'short_description',
+    'content',
+    'tags',
+    'category_id',
+    'author',
+    'status',
+    'date',
+    'meta_title',
+    'meta_description',
+    'meta_keywords',
     ];
 
 
-       public function category()
-    {
-        // فرض بر این است که مدل دسته بندی شما در app/Models/Category.php قرار دارد
-        return $this->belongsTo(Category::class);
-    }
+  public function category()
+{
+    return $this->belongsTo(Category::class);
+}
 
 
      protected $casts = [

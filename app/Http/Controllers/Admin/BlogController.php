@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BlogRequest;
 use App\Models\Content\Blog;
 use App\Models\Content\Category;
+use Illuminate\Support\Str; 
 use Illuminate\Support\Facades\File; 
 use Morilog\Jalali\Jalalian;
 
@@ -40,38 +41,27 @@ class BlogController extends Controller
     /**
      * ذخیره بلاگ جدید
      */
-    public function store(BlogRequest $request)
-    {
- 
-        $data = $request->validated();
+public function store(BlogRequest $request)
+{
+    $data = $request->validated();
 
+    // 1. ساخت خودکار Slug از روی عنوان
+    $data['slug'] = Str::slug($data['title']);
 
-
-
-// if (isset($data['date'])) {
- if (!empty($data['date'])) {
-            $data['date'] = Jalalian::fromFormat('Y/m/d', $data['date'])->toCarbon();
-        }
-
-
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . $image->getClientOriginalName();
-                $destinationPath = public_path('Admin/assets/img/blog/');
-                $image->move($destinationPath, $filename);
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر']);
-            }
-        }
-
-        Blog::create($data);
-
-        return redirect()->route('admin.blogs.index')->with('success', 'بلاگ با موفقیت ایجاد شد!');
+    // 2. تبدیل تاریخ شمسی به میلادی
+    if (!empty($data['date'])) {
+        $data['date'] = Jalalian::fromFormat('Y/m/d', $data['date'])->toCarbon()->format('Y-m-d');
     }
+
+    // 3. مدیریت آپلود تصویر
+    if ($request->hasFile('image')) {
+        $data['image'] = $this->uploadImage($request->file('image'));
+    }
+
+    Blog::create($data);
+
+    return redirect()->route('admin.blogs.index')->with('success', 'بلاگ با موفقیت ایجاد شد!');
+}
 
     /**
      * نمایش فرم ویرایش بلاگ
@@ -86,56 +76,48 @@ class BlogController extends Controller
     /**
      * به‌روزرسانی بلاگ
      */
-    public function update(BlogRequest $request, Blog $blog)
-    {
-        $data = $request->validated();
+public function update(BlogRequest $request, Blog $blog)
+{
+    $data = $request->validated();
 
-
-// if (isset($data['date'])) {
- if (!empty($data['date'])) {
-            $data['date'] = Jalalian::fromFormat('Y/m/d', $data['date'])->toCarbon();
-        } else {
-        // FIXED: added - Handle the case where the user clears the date field.
+    // 1. ساخت خودکار Slug از روی عنوان
+    $data['slug'] = Str::slug($data['title']);
+    
+    // 2. تبدیل تاریخ شمسی به میلادی
+    if (!empty($data['date'])) {
+        $data['date'] = Jalalian::fromFormat('Y/m/d', $data['date'])->toCarbon()->format('Y-m-d');
+    } else {
         $data['date'] = null;
     }
 
-
-
-
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . $image->getClientOriginalName();
-                $destinationPath = public_path('Admin/assets/img/blog/');
-                $image->move($destinationPath, $filename);
-
-
-
-if ($blog->image) {
-                    $oldImagePath = public_path('Admin/assets/img/blog/' . $blog->image);
-                    if (File::exists($oldImagePath)) {
-                        File::delete($oldImagePath);
-                    }
-                }
-
-
-
-                // // حذف تصویر قدیمی در صورت وجود
-                // if ($blog->image && file_exists(public_path('Admin/assets/img/blog/' . $blog->image))) {
-                //     unlink(public_path('Admin/assets/img/blog/' . $blog->image));
-                // }
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر']);
-            }
-        }
-
-        $blog->update($data);
-
-        return redirect()->route('admin.blogs.index')->with('success', 'بلاگ با موفقیت به‌روزرسانی شد!');
+    // 3. مدیریت آپلود تصویر و حذف تصویر قدیمی
+    if ($request->hasFile('image')) {
+        $data['image'] = $this->uploadImage($request->file('image'), $blog->image);
     }
+
+    $blog->update($data);
+
+    return redirect()->route('admin.blogs.index')->with('success', 'بلاگ با موفقیت به‌روزرسانی شد!');
+}
+
+
+
+private function uploadImage($image, $oldImage = null)
+{
+    // حذف تصویر قدیمی در صورت وجود
+    if ($oldImage) {
+        $oldImagePath = public_path('Admin/assets/img/blog/' . $oldImage);
+        if (File::exists($oldImagePath)) {
+            File::delete($oldImagePath);
+        }
+    }
+    
+    $filename = time() . '_' . $image->getClientOriginalName();
+    $destinationPath = public_path('Admin/assets/img/blog/');
+    $image->move($destinationPath, $filename);
+
+    return $filename;
+}
 
 
 
