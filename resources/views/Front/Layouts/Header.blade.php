@@ -26,7 +26,7 @@
                                     <li><a href="error.html">خطا</a></li>
                                 </ul>
                             </li>
-                            <li class="last_menu"><a href="contact.html">با ما تماس بگیرید</a></li>
+                            <li class="last_menu"><a href={{ route('front.contact.index') }}>با ما تماس بگیرید</a></li>
                         </ul>
                     </nav>
                 </div>

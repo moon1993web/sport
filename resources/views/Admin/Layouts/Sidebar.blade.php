@@ -26,7 +26,7 @@
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="Contact.html">
+            <a class="menu-link" href="{{ route('admin.contacts.index') }}">
                 <i class="menu-icon tf-icons fa fa-envelope"></i>
                 <div data-i18n="Contact">تماس با ما</div>
             </a>

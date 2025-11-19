@@ -5,12 +5,14 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\CoachController;
+use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\IconController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SocialNetworkController;
 use App\Http\Controllers\Front\BlogFrontController;
+use App\Http\Controllers\Front\FrontContactController;
 use App\Http\Controllers\Front\HomeControllerFront;
 use Illuminate\Support\Facades\Route;
 
@@ -126,6 +128,18 @@ Route::prefix('about-us')->name('about-us.')->group(function () {
 
 
 
+
+
+    Route::prefix('contacts')->name('contacts.')->group(function () {
+        Route::get('/', [ContactController::class, 'index'])->name('index'); // لیست پیام‌ها
+        Route::put('/update/{contact}', [ContactController::class, 'update'])->name('update'); // ثبت پاسخ
+        Route::delete('/destroy/{contact}', [ContactController::class, 'destroy'])->name('destroy'); // حذف
+    });
+
+
+
+
+
 Route::prefix('menus')->name('menus.')->group(function () {
     Route::get('/', [MenuController::class, 'index'])->name('index');
     Route::get('/create', [MenuController::class, 'create'])->name('create');
@@ -183,3 +197,9 @@ Route::prefix('skills')->name('skills.')->group(function () {
 // روت‌های فرانت‌اند بلاگ
 Route::get('/blogs', [BlogFrontController::class, 'index'])->name('front.blogs.index');
 Route::get('/blogs/{blog}', [BlogFrontController::class, 'show'])->name('front.blogs.show');
+
+
+
+//contact
+Route::get('/contact-us', [FrontContactController::class, 'index'])->name('front.contact.index');  // نمایش فرم
+Route::post('/contact-us', [FrontContactController::class, 'store'])->name('front.contact.store');
