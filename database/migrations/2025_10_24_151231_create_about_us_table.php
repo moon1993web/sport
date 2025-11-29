@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('about_us', function (Blueprint $table) {
             $table->id();
-            $table->string('title'); // عنوان
+           $table->string('title'); // عنوان
             $table->text('short_description'); // توضیحات کوتاه
-            $table->json('images')->nullable(); // تصاویر (چند تصویر + انتخاب از کتابخانه)
+            
+            //  تغییری که دادی: چون گفتی تکی، از json به string تغییر کرد
+            $table->string('image')->nullable(); // تصویر تک (انتخاب از گالری/آپلود)
+            
             $table->string('video_url')->nullable(); // ویدیو از سایت آپارات
             $table->string('meta_title')->nullable(); // عنوان متا
             $table->text('meta_description')->nullable(); // توضیحات متا

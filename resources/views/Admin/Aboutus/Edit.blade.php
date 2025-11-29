@@ -4,389 +4,229 @@
 <!-- Content -->
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">صفحه /</span> مدیریت درباره ما
+        <span class="text-muted fw-light">مدیریت محتوا /</span> <span class="fw-bold">درباره ما</span>
     </h4>
 
-    {{-- نمایش پیام موفقیت --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+    {{-- نمایش پیام‌های موفقیت --}}
+    @if(session('swal-success'))
+        <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
+            <i class="bx bx-check-circle me-2 fs-4"></i>
+            <div>{{ session('swal-success') }}</div>
         </div>
     @endif
 
-    <div class="app-about-us-edit">
-        <div class="card">
-            <div class="card-body">
-                <form action="{{ route('admin.about-us.update') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+    <form action="{{ route('admin.about-us.update') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
-                    {{-- بخش اطلاعات اصلی --}}
-                    <div class="border p-3 rounded mb-4">
-                        <h5 class="mb-4">اطلاعات اصلی</h5>
-
-                        {{-- ... فیلدهای عنوان، توضیحات کوتاه و تصاویر بدون تغییر باقی می‌مانند ... --}}
-                        <!-- عنوان (Title) -->
-                        <div class="mb-3">
-                            <label class="form-label" for="about-title">عنوان</label>
-                            <input type="text" id="about-title" name="title" class="form-control @error('title') is-invalid @enderror" placeholder="عنوان صفحه را وارد کنید" value="{{ old('title', $aboutUs->title ?? '') }}" />
-                            @error('title')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- توضیحات کوتاه (Short Description) -->
-                        <div class="mb-3">
-                            <label class="form-label" for="about-short-description">توضیحات کوتاه</label>
-                            <textarea id="about-short-description" name="short_description" class="form-control @error('short_description') is-invalid @enderror" rows="4" placeholder="یک توضیح مختصر و جذاب بنویسید">{{ old('short_description', $aboutUs->short_description ?? '') }}</textarea>
-                            @error('short_description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-
-
-
-
-
-
-
-
-                <!-- تصاویر (Images - Gallery) -->
-<div class="mb-3">
-    <label class="form-label" for="about-images">تصاویر گالری</label>
-    <input type="file" id="about-images" name="images[]" class="form-control @error('images.*') is-invalid @enderror" multiple accept="image/*">
-    <small class="text-muted">می‌توانید چندین تصویر را همزمان انتخاب کنید. فرمت‌های مجاز: jpeg, png, jpg, gif, webp. حداکثر حجم هر فایل: ۲ مگابایت.</small>
-    @error('images.*')
-        <div class="text-danger small mt-1">{{ $message }}</div>
-    @enderror
-</div>
-
-<!-- START: کانتینر برای پیش‌نمایش تصاویر جدید -->
-<div id="new-images-preview-container" class="d-flex flex-wrap gap-3 mt-3">
-    {{-- پیش‌نمایش تصاویر جدید در اینجا با جاوااسکریپت اضافه می‌شود --}}
-</div>
-<!-- END: کانتینر برای پیش‌نمایش تصاویر جدید -->
-
-
-<!-- نمایش و حذف تصاویر موجود -->
-@if(!empty($aboutUs->images) && count($aboutUs->images) > 0)
-<div class="mb-3 pt-3 border-top">
-    <label class="form-label">تصاویر فعلی:</label>
-    <div class="d-flex flex-wrap gap-3">
-        @foreach($aboutUs->images as $imagePath)
-        <div class="position-relative">
-            <img src="{{ asset('storage/' . $imagePath) }}" alt="تصویر گالری" class="img-fluid rounded" style="width: 120px; height: 120px; object-fit: cover;">
-            <div class="form-check position-absolute top-0 start-0 m-1 bg-white rounded p-1">
-                <input class="form-check-input" type="checkbox" name="deleted_images[]" value="{{ $imagePath }}" id="delete_img_{{ $loop->index }}">
-                <label class="form-check-label small" for="delete_img_{{ $loop->index }}">حذف</label>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
-@endif
-
-
-
-
-
-
-
-
-
-
-
+        <div class="row">
+            
+            {{-- 🟢 ستون اصلی (اطلاعات متنی و سئو) --}}
+            <div class="col-12 col-lg-8">
+                
+                {{-- کارت ۱: اطلاعات پایه --}}
+                <div class="card mb-4">
+                    <h5 class="card-header border-bottom">📝 اطلاعات اصلی</h5>
+                    <div class="card-body mt-4">
                         
-                        <!-- START: بخش ویدیو با قابلیت پیش‌نمایش -->
-                        <!-- آدرس ویدیو از آپارات (Video URL) -->
-                        <div class="mb-3">
-                            <label class="form-label" for="about-video-url">آدرس ویدیو (از آپارات)</label>
-                            <input type="url" id="about-video-url" name="video_url" class="form-control @error('video_url') is-invalid @enderror" placeholder="https://www.aparat.com/v/xxxxx" value="{{ old('video_url', $aboutUs->video_url ?? '') }}" />
-                            @error('video_url')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <!-- عنوان -->
+                        <div class="mb-4">
+                            <label class="form-label" for="title">عنوان صفحه <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $aboutUs->title ?? '') }}" placeholder="مثلاً: درباره شرکت ما" required />
+                            @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <!-- کانتینر برای نمایش پیش‌نمایش ویدیو -->
-                        <div id="video-preview-container" class="mt-3">
-                            {{-- پیش‌نمایش ویدیو در اینجا قرار می‌گیرد --}}
-                        </div>
-                        <!-- END: بخش ویدیو با قابلیت پیش‌نمایش -->
-                    </div>
-
-                    {{-- ... بخش‌های اطلاعات تماس و سئو بدون تغییر باقی می‌مانند ... --}}
-                    {{-- بخش اطلاعات تماس --}}
-                    <div class="border p-3 rounded mb-4">
-                        <h5 class="mb-4">اطلاعات تماس</h5>
-
-                        <!-- آدرس (Address) -->
-                        <div class="mb-3">
-                            <label class="form-label" for="about-address">آدرس</label>
-                            <textarea id="about-address" name="address" class="form-control @error('address') is-invalid @enderror" rows="3">{{ old('address', $aboutUs->address ?? '') }}</textarea>
-                            @error('address')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <!-- توضیحات کوتاه -->
+                        <div class="mb-4">
+                            <label class="form-label" for="short_description">توضیحات کوتاه <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('short_description') is-invalid @enderror" id="short_description" name="short_description" rows="5" placeholder="یک پاراگراف جذاب درباره کسب‌وکارتان بنویسید...">{{ old('short_description', $aboutUs->short_description ?? '') }}</textarea>
+                            @error('short_description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="row">
-                            <!-- شماره تماس (Phone Number) -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label" for="about-phone">شماره تماس</label>
-                                <input type="tel" id="about-phone" name="phone_number" class="form-control @error('phone_number') is-invalid @enderror" value="{{ old('phone_number', $aboutUs->phone_number ?? '') }}" />
-                                @error('phone_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <!-- شماره تماس -->
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label" for="phone_number">شماره تماس</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-phone"></i></span>
+                                    <input type="text" class="form-control text-start" dir="ltr" id="phone_number" name="phone_number" value="{{ old('phone_number', $aboutUs->phone_number ?? '') }}" placeholder="021-xxxxxxxx" />
+                                </div>
                             </div>
+                            <!-- ایمیل -->
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label" for="email">ایمیل</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                    <input type="email" class="form-control text-start" dir="ltr" id="email" name="email" value="{{ old('email', $aboutUs->email ?? '') }}" placeholder="info@company.com" />
+                                </div>
+                            </div>
+                        </div>
 
-                            <!-- ایمیل (Email) -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label" for="about-email">ایمیل</label>
-                                <input type="email" id="about-email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $aboutUs->email ?? '') }}" />
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <!-- آدرس -->
+                        <div class="mb-3">
+                            <label class="form-label" for="address">آدرس پستی</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" placeholder="آدرس دقیق محل کار...">{{ old('address', $aboutUs->address ?? '') }}</textarea>
                         </div>
                     </div>
+                </div>
 
-                    {{-- بخش سئو (SEO) --}}
-                    <div class="border p-3 rounded">
-                        <h5 class="mb-4">تنظیمات سئو (SEO)</h5>
-
-                        <!-- اسلاگ (Slug) -->
-                        <div class="mb-3">
-                            <label class="form-label" for="about-slug">اسلاگ (Slug)</label>
-                            <input type="text" id="about-slug" name="slug" class="form-control @error('slug') is-invalid @enderror" placeholder="about-us-page" value="{{ old('slug', $aboutUs->slug ?? '') }}" />
-                            <small class="text-muted">برای URL صفحه استفاده می‌شود. اگر خالی بگذارید، به صورت خودکار از روی عنوان ساخته می‌شود.</small>
-                            @error('slug')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                {{-- کارت ۲: تنظیمات سئو --}}
+                <div class="card mb-4">
+                    <h5 class="card-header border-bottom">🔍 تنظیمات سئو (SEO)</h5>
+                    <div class="card-body mt-4">
+                        
+                        <div class="row">
+                            <!-- اسلاگ -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="slug">URL صفحه (Slug)</label>
+                                <input type="text" class="form-control text-start" dir="ltr" id="slug" name="slug" value="{{ old('slug', $aboutUs->slug ?? '') }}" placeholder="about-us" />
+                            </div>
+                            
+                            <!-- عنوان متا -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="meta_title">عنوان متا (Title Tag)</label>
+                                <input type="text" class="form-control" id="meta_title" name="meta_title" value="{{ old('meta_title', $aboutUs->meta_title ?? '') }}" />
+                            </div>
                         </div>
 
-                        <!-- عنوان متا (Meta Title) -->
+                        <!-- کلمات کلیدی -->
                         <div class="mb-3">
-                            <label class="form-label" for="about-meta-title">عنوان متا</label>
-                            <input type="text" id="about-meta-title" name="meta_title" class="form-control @error('meta_title') is-invalid @enderror" value="{{ old('meta_title', $aboutUs->meta_title ?? '') }}" />
-                            @error('meta_title')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label" for="keywords">کلمات کلیدی (Keywords)</label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-purchase-tag"></i></span>
+                                <input type="text" class="form-control" id="keywords" name="keywords" value="{{ old('keywords', $aboutUs->keywords ?? '') }}" placeholder="کلمه ۱، کلمه ۲، ..." />
+                            </div>
+                            <div class="form-text">کلمات را با علامت کاما (،) یا (,) جدا کنید.</div>
                         </div>
 
-                        <!-- توضیحات متا (Meta Description) -->
+                        <!-- توضیحات متا -->
                         <div class="mb-3">
-                            <label class="form-label" for="about-meta-description">توضیحات متا</label>
-                            <textarea id="about-meta-description" name="meta_description" class="form-control @error('meta_description') is-invalid @enderror" rows="2">{{ old('meta_description', $aboutUs->meta_description ?? '') }}</textarea>
-                            @error('meta_description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label" for="meta_description">توضیحات متا (Meta Description)</label>
+                            <textarea class="form-control" id="meta_description" name="meta_description" rows="3">{{ old('meta_description', $aboutUs->meta_description ?? '') }}</textarea>
                         </div>
 
-                        <!-- کلمات کلیدی (Keywords) -->
-                       <div class="mb-3">
-        <label class="form-label" for="about-keywords-tagify">کلمات کلیدی</label>
-        <input id="about-keywords-tagify" name="keywords" class="form-control" placeholder="کلمات کلیدی را وارد کرده و Enter بزنید" value="{{ old('keywords', $aboutUs->keywords ?? '') }}" />
-        {{-- نیازی به نمایش خطا با is-invalid نیست چون Tagify ظاهر خودش را دارد --}}
-        @error('keywords')
-            <div class="form-text text-danger mt-1">{{ $message }}</div>
-        @enderror
-    </div>
-
-                    <!-- دکمه ذخیره -->
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
                     </div>
-                </form>
+                </div>
             </div>
+
+            {{-- 🟣 ستون کناری (مدیا و انتشار) --}}
+            <div class="col-12 col-lg-4">
+                
+                {{-- کارت ۳: تصویر شاخص --}}
+                <div class="card mb-4">
+                    <h6 class="card-header">🖼️ تصویر شاخص</h6>
+                    <div class="card-body">
+                        
+                        <!-- پیش‌نمایش -->
+                        <div class="d-flex justify-content-center align-items-center border rounded bg-light mb-3" style="min-height: 200px; overflow: hidden;">
+                            @if(isset($aboutUs->image))
+                                <img id="image-preview" src="{{ asset('storage/' . $aboutUs->image) }}" class="img-fluid" style="object-fit: contain; max-height: 200px;">
+                            @else
+                                <img id="image-preview" src="{{ asset('assets/img/no-image.png') }}" class="img-fluid" style="display: none; object-fit: contain; max-height: 200px;">
+                                <div id="image-placeholder" class="text-center text-muted">
+                                    <i class="bx bx-image fs-1"></i>
+                                    <div class="small mt-2">تصویر انتخاب نشده</div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <label for="image" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="bx bx-upload me-1"></i> انتخاب تصویر
+                        </label>
+                        <input type="file" id="image" name="image" class="d-none" accept="image/*" onchange="previewImage(event)">
+                        
+                        <div class="text-muted small text-center">فرمت‌های مجاز: JPG, PNG (Max 2MB)</div>
+                        @error('image') <div class="text-danger small text-center mt-2">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                {{-- کارت ۴: ویدیو --}}
+                <div class="card mb-4">
+                    <h6 class="card-header">🎥 ویدیو معرفی (آپارات)</h6>
+                    <div class="card-body">
+                        <label class="form-label" for="video_url">لینک ویدیو</label>
+                        <input type="url" class="form-control text-start mb-3" dir="ltr" 
+                               id="video_url" name="video_url" 
+                               placeholder="https://www.aparat.com/v/..." 
+                               value="{{ old('video_url', $aboutUs->video_url ?? '') }}" 
+                               oninput="previewAparatVideo(this.value)">
+                        
+                        <!-- پیش‌نمایش -->
+                        <div id="video-preview-box" class="ratio ratio-16x9 rounded overflow-hidden bg-dark" style="display: none;">
+                            <iframe id="aparat-iframe" src="" allowFullScreen="true"></iframe>
+                        </div>
+                        <div id="video-placeholder" class="text-center p-4 bg-light border border-dashed rounded text-muted" style="{{ !empty($aboutUs->video_url) ? 'display:none' : '' }}">
+                            <i class="bx bx-movie-play fs-1"></i>
+                            <div class="small mt-2">پیش‌نمایش ویدیو</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- دکمه ذخیره --}}
+                <div class="card">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            <i class="bx bx-save me-2"></i> ثبت و ذخیره تغییرات
+                        </button>
+                        <a href="{{ route('admin.index') }}" class="btn btn-label-secondary w-100 mt-2">
+                            بازگشت به داشبورد
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
-    </div>
+    </form>
 </div>
 <!-- / Content -->
 @endsection
 
 
-{{-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const videoUrlInput = document.getElementById('about-video-url');
-        const previewContainer = document.getElementById('video-preview-container');
-
-        // تابعی برای به‌روزرسانی پیش‌نمایش
-        function updateVideoPreview(url) {
-            // ابتدا کانتینر را خالی می‌کنیم
-            previewContainer.innerHTML = '';
-
-            // بررسی می‌کنیم که آیا URL معتبر است و شامل الگوی آپارات است
-            if (url && url.includes('aparat.com/v/')) {
-                // استخراج شناسه ویدیو از URL
-                const videoId = url.split('/v/')[1].split('?')[0]; // جدا کردن پارامترهای احتمالی URL
-
-                if (videoId) {
-                    // ساخت URL مخصوص embed آپارات
-                    const embedUrl = `https://www.aparat.com/video/video/embed/videohash/${videoId}/vt/frame`;
-
-                    // ساخت iframe و افزودن آن به کانتینر پیش‌نمایش
-                    const iframe = `
-                        <iframe
-                            src="${embedUrl}"
-                            allowFullScreen="true"
-                            webkitallowfullscreen="true"
-                            mozallowfullscreen="true"
-                            style="width: 100%; height: 360px; border: none; border-radius: 8px;">
-                        </iframe>`;
-                    previewContainer.innerHTML = iframe;
-                }
-            }
-        }
-
-        // افزودن event listener به فیلد ورودی
-        videoUrlInput.addEventListener('input', function () {
-            updateVideoPreview(this.value);
-        });
-
-        // اجرای تابع در زمان بارگذاری صفحه برای نمایش پیش‌نمایش ویدیوی موجود
-        updateVideoPreview(videoUrlInput.value);
-    });
-</script> --}}
-
-
-
-
-
-
-
-
-
-{{-- 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ... کد موجود برای پیش‌نمایش ویدیو ...
-    const videoUrlInput = document.getElementById('about-video-url');
-    const previewContainer = document.getElementById('video-preview-container');
-    function updateVideoPreview(url) { /* ... */ }
-    videoUrlInput.addEventListener('input', function () { updateVideoPreview(this.value); });
-    updateVideoPreview(videoUrlInput.value);
+    // 🖼️ Preview Image Logic
+    function previewImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('image-preview');
+        const placeholder = document.getElementById('image-placeholder');
 
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if(placeholder) placeholder.style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 
-    // START: راه‌اندازی Tagify برای کلمات کلیدی
-    try {
-        // المان ورودی کلمات کلیدی را پیدا کنید
-        var keywordsInput = document.querySelector('#about-keywords-tagify');
+    // 🎥 Preview Aparat Logic
+    function previewAparatVideo(url) {
+        const previewBox = document.getElementById('video-preview-box');
+        const placeholder = document.getElementById('video-placeholder');
+        const iframe = document.getElementById('aparat-iframe');
 
-        if (keywordsInput) {
-            // Tagify را روی آن فعال کنید
-            var tagify = new Tagify(keywordsInput, {
-                // تنظیمات دلخواه Tagify در اینجا قرار می‌گیرد
-                // مثلاً: whitelist: ["کلمه۱", "کلمه۲"],
-                // dropdown: { enabled: 0 }
-            });
-            console.log('Tagify for keywords initialized successfully!');
+        const regex = /aparat\.com\/v\/([a-zA-Z0-9]+)/;
+        const match = url.match(regex);
+
+        if (match && match[1]) {
+            const videoId = match[1];
+            iframe.src = `https://www.aparat.com/video/video/embed/videohash/${videoId}/vt/frame`;
+            previewBox.style.display = 'block';
+            if(placeholder) placeholder.style.display = 'none';
         } else {
-            console.error('Keywords input element #about-keywords-tagify not found!');
-        }
-    } catch (e) {
-        console.error('Error initializing Tagify for keywords:', e);
-    }
-    // END: راه‌اندازی Tagify
-});
-</script> --}}
-
-
-
-
-{{-- افزودن اسکریپت‌های کتابخانه‌های خارجی در ابتدا --}}
-<script src="https://unpkg.com/@yaireo/tagify"></script>
-<script src="https://unpkg.com/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
-
-{{-- اسکریپت‌های سفارشی شما (همه در یک بلوک و داخل DOMContentLoaded) --}}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    // =================================================================
-    // 1. اسکریپت پیش‌نمایش ویدیو آپارات
-    // =================================================================
-    const videoUrlInput = document.getElementById('about-video-url');
-    const videoPreviewContainer = document.getElementById('video-preview-container');
-
-    function updateVideoPreview(url) {
-        if (!videoPreviewContainer) return; // اگر کانتینر وجود نداشت، ادامه نده
-        videoPreviewContainer.innerHTML = '';
-        if (url && url.includes('aparat.com/v/')) {
-            const videoId = url.split('/v/')[1].split('?')[0];
-            if (videoId) {
-                const embedUrl = `https://www.aparat.com/video/video/embed/videohash/${videoId}/vt/frame`;
-                const iframe = `<iframe src="${embedUrl}" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" style="width: 100%; height: 360px; border: none; border-radius: 8px;"></iframe>`;
-                videoPreviewContainer.innerHTML = iframe;
-            }
+            previewBox.style.display = 'none';
+            if(placeholder) placeholder.style.display = 'block';
+            iframe.src = '';
         }
     }
 
-    if (videoUrlInput) {
-        // اجرای تابع در زمان بارگذاری صفحه برای نمایش ویدیوی موجود
-        updateVideoPreview(videoUrlInput.value);
-        // افزودن event listener به فیلد ورودی
-        videoUrlInput.addEventListener('input', () => updateVideoPreview(videoUrlInput.value));
-    }
-
-
-    // =================================================================
-    // 2. راه‌اندازی Tagify برای کلمات کلیدی
-    // =================================================================
-    try {
-        const keywordsInput = document.querySelector('#about-keywords-tagify');
-        if (keywordsInput) {
-            new Tagify(keywordsInput);
-            console.log('Tagify initialized successfully!');
+    // Init on Load
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentVideoUrl = document.getElementById('video_url').value;
+        if(currentVideoUrl) {
+            previewAparatVideo(currentVideoUrl);
         }
-    } catch (e) {
-        console.error('Error initializing Tagify:', e);
-    }
-
-
-    // =================================================================
-    // 3. اسکریپت پیش‌نمایش گالری تصاویر (چندتایی)
-    // =================================================================
-    const galleryInput = document.getElementById('about-images');
-    const newImagesPreviewContainer = document.getElementById('new-images-preview-container');
-
-    if (galleryInput && newImagesPreviewContainer) {
-        galleryInput.addEventListener('change', function(event) {
-            // هر بار که فایل‌های جدید انتخاب می‌شوند، پیش‌نمایش قبلی را پاک کن
-            newImagesPreviewContainer.innerHTML = '';
-
-            const files = event.target.files;
-            
-            if (files && files.length > 0) {
-                // یک عنوان برای بخش پیش‌نمایش اضافه کن
-                const previewTitle = document.createElement('p');
-                previewTitle.className = 'w-100 fw-bold mb-0';
-                previewTitle.innerText = 'پیش‌نمایش تصاویر جدید:';
-                newImagesPreviewContainer.appendChild(previewTitle);
-
-                // برای هر فایل انتخاب شده، یک پیش‌نمایش بساز
-                Array.from(files).forEach(file => {
-                    if (!file.type.startsWith('image/')) { return; }
-
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.alt = 'پیش‌نمایش تصویر جدید';
-                        img.className = 'img-fluid rounded';
-                        img.style.cssText = 'width: 120px; height: 120px; object-fit: cover;';
-                        
-                        newImagesPreviewContainer.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-        });
-    } else {
-        console.warn('Gallery input or preview container not found. Check the IDs: #about-images, #new-images-preview-container');
-    }
-
-});
+    });
 </script>
-
-
-
-

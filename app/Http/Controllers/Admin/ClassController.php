@@ -3,129 +3,113 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ClassRequest;
 use App\Models\Content\TrainingClass;
 use App\Models\Content\Category;
-use App\Models\Content\Coach; 
-use App\Http\Requests\ClassRequest;
-use Illuminate\Http\Request;
+use App\Models\Content\Coach;
+use Illuminate\Support\Facades\Storage;
 
 class ClassController extends Controller
 {
     /**
-     * نمایش لیست کلاس‌ها و فرم ایجاد.
+     * نمایش لیست کلاس‌ها
      */
-    public function index()
+     public function index()
     {
-        // Eager Loading برای جلوگیری از مشکل N+1 در view
-        $classes = TrainingClass::latest()->with('coach', 'category')->get();
-        
-        // دریافت تمام دسته‌بندی‌ها و مربیان برای استفاده در فرم ایجاد
-        $categories = Category::all();
+        // دریافت کلاس‌ها
+        $classes = TrainingClass::with(['coach', 'category'])
+            ->latest()
+            ->paginate(10);
+
+        // 🟩 اضافه شده: دریافت لیست مربیان و دسته‌بندی‌ها برای تب "افزودن"
         $coaches = Coach::all();
+        $categories = Category::all();
 
-        // ارسال همه داده‌ها به view
-        // فرض بر این است که فرم ایجاد (Create) در همان view لیست (List) قرار دارد
-        return view('Admin.Classes.List', compact('classes','categories', 'coaches'));
+        // ارسال همه متغیرها به ویو
+        return view('Admin.Classes.List', compact('classes', 'coaches', 'categories'));
     }
-
     /**
-     * نمایش فرم ایجاد کلاس (در صورت استفاده از صفحه جداگانه).
+     * نمایش فرم ایجاد کلاس
      */
     public function create()
     {
+        // دریافت لیست دسته‌بندی‌ها و مربیان برای نمایش در سلکت‌باکس
         $categories = Category::all();
         $coaches = Coach::all();
+
         return view('Admin.Classes.Create', compact('categories', 'coaches'));
     }
 
     /**
-     * ذخیره کلاس جدید در دیتابیس.
+     * ذخیره کلاس جدید
      */
     public function store(ClassRequest $request)
     {
-        $data = $request->validated();
+        $inputs = $request->validated();
 
         // مدیریت آپلود تصویر
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                // مسیر ذخیره‌سازی از اطلاعات شما گرفته شده است
-                $destinationPath = public_path('Admin/assets/img/class/');
-                $image->move($destinationPath, $filename);
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر. لطفاً مجدداً تلاش کنید.'])->withInput();
-            }
+            $inputs['image'] = $request->file('image')->store('classes', 'public');
         }
 
-        // ایجاد رکورد جدید در دیتابیس
-        TrainingClass::create($data);
+        // نکته: تبدیل آرایه 'days' به JSON به صورت خودکار توسط Casts مدل انجام می‌شود.
 
-        // بازگشت به لیست همراه با پیام موفقیت
-        return redirect()->route('admin.classes.index')->with('success', 'کلاس جدید با موفقیت ایجاد شد!');
+        TrainingClass::create($inputs);
+
+        return redirect()->route('admin.classes.index')
+            ->with('swal-success', 'کلاس جدید با موفقیت ایجاد شد.');
     }
 
     /**
-     * نمایش فرم ویرایش کلاس.
+     * نمایش فرم ویرایش
+     * پارامتر ورودی $id است چون در روت {class} تعریف شده اما مدل TrainingClass است.
      */
-    public function edit(TrainingClass $class) // استفاده از Route Model Binding
+    public function edit($id)
     {
-        // دریافت تمام دسته‌بندی‌ها و مربیان برای dropdown های فرم ویرایش
+        $class = TrainingClass::findOrFail($id);
         $categories = Category::all();
         $coaches = Coach::all();
-        
+
         return view('Admin.Classes.Edit', compact('class', 'categories', 'coaches'));
     }
 
     /**
-     * به‌روزرسانی اطلاعات کلاس.
+     * بروزرسانی کلاس
      */
-    public function update(ClassRequest $request, TrainingClass $class)
+    public function update(ClassRequest $request, $id)
     {
-        $data = $request->validated();
+        $class = TrainingClass::findOrFail($id);
+        $inputs = $request->validated();
 
-        // مدیریت آپلود تصویر جدید
+        // مدیریت آپلود تصویر جدید و حذف قبلی
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $destinationPath = public_path('Admin/assets/img/class/');
-                $image->move($destinationPath, $filename);
-
-                // حذف تصویر قدیمی در صورت وجود
-                if ($class->image && file_exists(public_path('Admin/assets/img/class/' . $class->image))) {
-                    unlink(public_path('Admin/assets/img/class/' . $class->image));
-                }
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر جدید.'])->withInput();
+            if ($class->image && Storage::exists('public/' . $class->image)) {
+                Storage::delete('public/' . $class->image);
             }
+            $inputs['image'] = $request->file('image')->store('classes', 'public');
         }
 
-        // به‌روزرسانی رکورد در دیتابیس
-        $class->update($data);
+        $class->update($inputs);
 
-        // بازگشت به لیست همراه با پیام موفقیت
-        return redirect()->route('admin.classes.index')->with('success', 'اطلاعات کلاس با موفقیت به‌روزرسانی شد!');
+        return redirect()->route('admin.classes.index')
+            ->with('swal-success', 'اطلاعات کلاس با موفقیت ویرایش شد.');
     }
 
     /**
-     * حذف کلاس از دیتابیس.
+     * حذف کلاس
      */
-    public function destroy(TrainingClass $class)
+    public function destroy($id)
     {
-        // حذف تصویر مرتبط با کلاس از پوشه public (مهم برای جلوگیری از فایل‌های بیهوده)
-        if ($class->image && file_exists(public_path('Admin/assets/img/class/' . $class->image))) {
-            unlink(public_path('Admin/assets/img/class/' . $class->image));
+        $class = TrainingClass::findOrFail($id);
+
+        // حذف تصویر از حافظه
+        if ($class->image && Storage::exists('public/' . $class->image)) {
+            Storage::delete('public/' . $class->image);
         }
 
-        // حذف رکورد از دیتابیس
         $class->delete();
 
-        // بازگشت به لیست همراه با پیام موفقیت
-        return redirect()->route('admin.classes.index')->with('success', 'کلاس با موفقیت حذف شد!');
+        return redirect()->route('admin.classes.index')
+            ->with('swal-success', 'کلاس با موفقیت حذف شد.');
     }
 }

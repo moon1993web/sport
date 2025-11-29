@@ -1,62 +1,57 @@
 <?php
 
 namespace App\Models\Content;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Content\Category; //  ایمپورت صحیح مدل دسته‌بندی
+use App\Models\Content\Coach;    //  ایمپورت صحیح مدل مربی
+
 class TrainingClass extends Model
 {
-        use HasFactory;
+    use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
+    // 💡 چون اسم مدل (TrainingClass) با اسم جدول (classes) فرق داره، اینجا باید دستی بگیم
     protected $table = 'classes';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'title',
+        'slug',
+        'description',
         'image',
+        'price',
+        'capacity',
         'category_id',
         'coach_id',
-        'days',
-        // 'time_type',
-        // 'start_time',
-        // 'end_time',
+        'days',       // داده‌های روزهای هفته (JSON)
+        'start_time',
+        'end_time',
+        'status',
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * تبدیل خودکار داده‌ها هنگام دریافت از دیتابیس
      */
     protected $casts = [
-        'days' => 'array', // این خط بسیار مهم است! آرایه روزها را به صورت خودکار به JSON تبدیل می‌کند و برعکس
+        'days' => 'array',    // 🪄 JSON دیتابیس -> آرایه PHP
+        'status' => 'boolean',
     ];
 
+    // --- روابط (Relationships) ---
+
     /**
-     * Define the relationship with the Category model.
-     * هر کلاس به یک دسته‌بندی تعلق دارد
+     * ارتباط با دسته‌بندی
      */
-    public function category(): BelongsTo
+    public function category()
     {
-        // به مدل Category که در ادامه می‌سازیم متصل می‌شود
         return $this->belongsTo(Category::class, 'category_id');
     }
 
     /**
-     * Define the relationship with the Coach model.
-     * هر کلاس به یک مربی تعلق دارد
+     * ارتباط با مربی
      */
-    public function coach(): BelongsTo
+    public function coach()
     {
-        // به مدل Coach که از قبل داشتیم متصل می‌شود
         return $this->belongsTo(Coach::class, 'coach_id');
     }
 }

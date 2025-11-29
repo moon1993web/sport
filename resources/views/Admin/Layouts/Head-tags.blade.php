@@ -67,9 +67,28 @@
 
 <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 
+<!-- در قسمت head فایل Master.blade.php قرار دهید -->
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
 
 
+
+{{-- 🕒 استایل‌های Flatpickr (تایم پیکر) --}}
+{{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"> --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+{{-- استایل تایم پیکر (نسخه استاندارد و هماهنگ با قالب) --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+<style>
+    /* کمی خوشگل‌سازی اینپوت‌ها */
+    .time-input-styled {
+        background-color: #fff !important;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+</style>
 
 
 

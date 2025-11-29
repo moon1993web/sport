@@ -1,114 +1,209 @@
 @extends('Admin.Layouts.Master')
 
 @section('content')
-    <!-- محتوا -->
-    <div class="content-wrapper">
-        <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="py-3 mb-4">مدیریت کلاس‌ها</h4>
-            <div class="row">
-                <div class="col-12">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <ul class="nav nav-tabs" id="classTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
-                                        data-bs-target="#class-list" type="button" role="tab"
-                                        aria-controls="class-list" aria-selected="true">لیست کلاس‌ها</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#class-add"
-                                        type="button" role="tab" aria-controls="class-add" aria-selected="false">افزودن
-                                        کلاس جدید</button>
-                                </li>
-                            </ul>
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <h4 class="py-3 mb-4">
+            <span class="text-muted fw-light">مدیریت محتوا /</span> <span class="fw-bold">کلاس‌های آموزشی</span>
+        </h4>
 
-                            <div class="tab-content mt-4" id="classTabsContent">
-                                <!-- تب لیست کلاس‌ها -->
-                                <div class="tab-pane fade show active" id="class-list" role="tabpanel"
-                                    aria-labelledby="list-tab">
-                                    <table class="table table-hover">
-                                        <thead>
+        {{-- نمایش پیام‌های سیستم --}}
+        @if (session('swal-success'))
+            <div class="alert alert-success d-flex align-items-center mb-3 shadow-sm border-0" role="alert">
+                <i class="bx bx-check-circle me-2 fs-4"></i>
+                {{ session('swal-success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger mb-3 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-1">
+                    <i class="bx bx-error-circle me-2 fs-4"></i>
+                    <span>لطفاً خطاهای زیر را بررسی کنید:</span>
+                </div>
+                <ul class="mb-0 small">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="nav-align-top mb-4">
+
+                    {{-- 🟢 هدر تب‌ها --}}
+                    <ul class="nav nav-tabs nav-fill" role="tablist">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link {{ $errors->any() ? '' : 'active' }} py-3" role="tab"
+                                data-bs-toggle="tab" data-bs-target="#navs-list" aria-controls="navs-list"
+                                aria-selected="true">
+                                <i class="bx bx-list-ul me-2"></i> لیست کلاس‌ها
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link {{ $errors->any() ? 'active' : '' }} py-3" role="tab"
+                                data-bs-toggle="tab" data-bs-target="#navs-create" aria-controls="navs-create"
+                                aria-selected="false">
+                                <i class="bx bx-plus-circle me-2"></i> افزودن کلاس جدید
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content shadow-sm rounded-bottom">
+
+                        {{-- 📋 پنل لیست --}}
+                        <div class="tab-pane fade {{ $errors->any() ? '' : 'show active' }}" id="navs-list" role="tabpanel">
+                            <div class="table-responsive text-nowrap" style="min-height: 300px;">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 80px;">تصویر</th>
+                                            <th>عنوان و توضیحات</th>
+                                            <th>مربی و زمان</th>
+                                            <th>شهریه / ظرفیت</th>
+                                            <th>وضعیت</th>
+                                            <th class="text-center">عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($classes as $class)
                                             <tr>
-                                                <th>#</th>
-                                                <th>عنوان کلاس</th>
-                                                <th>دسته‌بندی</th>
-                                                <th>مربی</th>
-                                                <th>روزهای کلاس</th>
-                                                {{-- <th>زمان کلاس</th> --}} {{-- این فیلد فعلا در دیتابیس شما نیست --}}
-                                                <th>عملیات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {{-- شروع حلقه برای نمایش داینامیک کلاس‌ها --}}
-                                            @forelse ($classes as $class)
-                                                <tr>
-                                                    {{-- شماره ردیف --}}
-                                                    <td>{{ $loop->iteration }}</td>
-
-                                                    {{-- عنوان کلاس --}}
-                                                    <td>{{ $class->title }}</td>
-
-                                                    {{-- نام دسته‌بندی (با استفاده از ریلیشن) --}}
-                                                    {{-- استفاده از ?? برای مواقعی که دسته‌بندی حذف شده باشد --}}
-                                                    <td>{{ $class->category->name ?? 'تعیین نشده' }}</td>
-
-                                                    {{-- نام مربی (با استفاده از ریلیشن) --}}
-                                                    <td>{{ $class->coach->full_name ?? 'تعیین نشده' }}</td>
-
-                                                    {{-- روزهای کلاس (تبدیل آرایه به رشته) --}}
-                                                    <td>
-                                                        @if (is_array($class->days) && !empty($class->days))
-                                                            {{ implode('، ', $class->days) }}
+                                                {{-- 🖼️ تصویر --}}
+                                                <td>
+                                                    <div class="d-flex align-items-center justify-content-center bg-light rounded overflow-hidden border"
+                                                        style="width: 60px; height: 60px;">
+                                                        @if ($class->image)
+                                                            <img src="{{ asset('storage/' . $class->image) }}"
+                                                                alt="Class Img"
+                                                                style="width: 100%; height: 100%; object-fit: cover;">
                                                         @else
-                                                            -
+                                                            <i class="bx bx-dumbbell text-secondary fs-3"></i>
                                                         @endif
-                                                    </td>
+                                                    </div>
+                                                </td>
 
-                                                    {{-- <td>10:00-12:00</td> --}}
+                                                {{-- عنوان --}}
+                                                <td>
+                                                    <div class="fw-bold fs-6 mb-1">{{ $class->title }}</div>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        @php
+                                                            $faDays = [
+                                                                'Saturday' => 'شنبه',
+                                                                'Sunday' => 'یکشنبه',
+                                                                'Monday' => 'دوشنبه',
+                                                                'Tuesday' => 'سه‌شنبه',
+                                                                'Wednesday' => 'چهارشنبه',
+                                                                'Thursday' => 'پنج‌شنبه',
+                                                                'Friday' => 'جمعه',
+                                                            ];
+                                                        @endphp
+                                                        @if (!empty($class->days) && is_array($class->days))
+                                                            @foreach ($class->days as $day)
+                                                                <span
+                                                                    class="badge bg-label-info font-size-10 px-2">{{ $faDays[$day] ?? $day }}</span>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="text-muted small">بدون برنامه زمانی</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
 
-                                                    {{-- دکمه‌های عملیات --}}
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                                type="button" data-bs-toggle="dropdown">عملیات</button>
-                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                {{-- لینک ویرایش (بعدا ساخته می‌شود) --}}
-                                                                <li>
-                                                                <li>
-                                                                    <a class="dropdown-item" href="{{ route('admin.classes.edit', $class->id) }}">ویرایش</a>
-                                                                       
-                                                                </li>
-                                                                </li>
-                                                                {{-- فرم حذف --}}
-                                                                <li>
-                                                                    <form action="{{ route('admin.classes.destroy', $class->id) }} " method="POST" 
-                                                                        onsubmit="return confirm('آیا از حذف این کلاس اطمینان دارید؟');">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit"
-                                                                            class="dropdown-item text-danger">حذف</button>
-                                                                    </form>
-                                                                </li>
-                                                            </ul>
+                                                {{-- 🟩 اصلاح شده: نمایش هوشمند نام مربی --}}
+                                                <td>
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <i class="bx bx-user me-1 text-primary"></i>
+                                                        <span class="text-dark small">
+                                                            {{ $class->coach->name ?? ($class->coach->full_name ?? ($class->coach->first_name . ' ' . $class->coach->last_name ?? '---')) }}
+                                                        </span>
+                                                    </div>
+                                                    @if ($class->start_time && $class->end_time)
+                                                        <div class="small text-muted">
+                                                            <i class="bx bx-time me-1"></i>
+                                                            {{ \Carbon\Carbon::parse($class->start_time)->format('H:i') }}
+                                                            تا {{ \Carbon\Carbon::parse($class->end_time)->format('H:i') }}
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                {{-- پیامی برای زمانی که هیچ کلاسی وجود ندارد --}}
-                                                <tr>
-                                                    <td colspan="6" class="text-center">هیچ کلاسی یافت نشد.</td>
-                                                </tr>
-                                            @endforelse
-                                            {{-- پایان حلقه --}}
-                                        </tbody>
-                                    </table>
+                                                    @endif
+                                                </td>
+
+                                                {{-- قیمت --}}
+                                                <td>
+                                                    <div class="mb-1">
+                                                        @if ($class->price)
+                                                            <span
+                                                                class="fw-bold text-success">{{ number_format($class->price) }}</span>
+                                                            <small class="text-muted">تومان</small>
+                                                        @else
+                                                            <span class="badge bg-success">رایگان</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        <i class="bx bx-group me-1"></i>
+                                                        {{ $class->capacity ? $class->capacity . ' نفر' : 'نامحدود' }}
+                                                    </div>
+                                                </td>
+
+                                                {{-- وضعیت --}}
+                                                <td>
+                                                    @if ($class->status)
+                                                        <span class="badge bg-label-primary">فعال</span>
+                                                    @else
+                                                        <span class="badge bg-label-secondary">غیرفعال</span>
+                                                    @endif
+                                                </td>
+
+                                                {{-- 🟩 اصلاح شده: دکمه‌های استاندارد Outline --}}
+                                                <td class="text-center">
+                                                    <div class="d-inline-flex gap-2">
+                                                        {{-- دکمه ویرایش --}}
+                                                        <a href="{{ route('admin.classes.edit', $class->id) }}"
+                                                            class="btn btn-sm btn-warning text-white" title="ویرایش">
+                                                            <i class="bx bx-edit-alt"></i>
+                                                        </a>
+
+                                                        {{-- دکمه حذف --}}
+                                                        <form action="{{ route('admin.classes.destroy', $class->id) }}"
+                                                            method="POST" class="d-inline"
+                                                            onsubmit="return confirm('آیا از حذف این کلاس مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
+                                                            @csrf
+                                                            @method('DELETE')
+
+                                                            {{-- اصلاح: تغییر type به submit و استفاده از آیکون استاندارد --}}
+                                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                                title="حذف">
+                                                                <i class="bx bx-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center py-5">
+                                                    <img src="{{ asset('assets/img/illustrations/empty-box.png') }}"
+                                                        alt="Empty" width="100" class="mb-3 opacity-50">
+                                                    <p class="text-muted mb-0">هنوز کلاسی ثبت نشده است.</p>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+
+                                {{-- صفحه‌بندی --}}
+                                <div class="mt-4 d-flex justify-content-center">
+                                    {{ $classes->links('pagination::bootstrap-5') }}
                                 </div>
-
-                                <!-- تب افزودن کلاس جدید -->
-                                @include('Admin.Classes.Create')
-
                             </div>
                         </div>
+
+                        {{-- ➕ پنل افزودن --}}
+                        <div class="tab-pane fade {{ $errors->any() ? 'show active' : '' }}" id="navs-create"
+                            role="tabpanel">
+                            <div class="p-3">
+                                @include('Admin.Classes.Create')
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

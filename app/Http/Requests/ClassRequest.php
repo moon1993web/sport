@@ -3,11 +3,12 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ClassRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * تعیین سطح دسترسی
      */
     public function authorize(): bool
     {
@@ -15,86 +16,61 @@ class ClassRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * قوانین اعتبارسنجی
      */
     public function rules(): array
     {
-        // // قوانین مشترک برای روزهای هفته
-        $daysRules = [
-            'nullable',
-            'array', // باید یک آرایه باشد
-            'min:1'    // حداقل یک روز باید انتخاب شود (در صورت نیاز می‌توانید این قانون را حذف کنید)
+        // 👇 دریافت پارامتر روت (ممکن است آبجکت باشد یا فقط یک ID رشته‌ای)
+        $routeParam = $this->route('class'); 
+        
+        // 🟩 اصلاح مهم: اگر آبجکت بود ID را بگیر، اگر رشته بود خودش را بردار
+        $classId = is_object($routeParam) ? $routeParam->id : $routeParam;
+
+        return [
+            'title'       => 'required|string|max:255',
+            'slug'        => [
+                'required',
+                'string',
+                'max:255',
+                // نادیده گرفتن رکورد فعلی هنگام بررسی یکتا بودن
+                Rule::unique('classes', 'slug')->ignore($classId),
+            ],
+            'description' => 'nullable|string',
+            
+            // تصویر (تکی)
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            
+            'price'       => 'nullable|numeric|min:0',
+            'capacity'    => 'nullable|integer|min:1',
+            
+            'category_id' => 'nullable|exists:categories,id',
+            'coach_id'    => 'required|exists:coaches,id',
+            
+            'days'        => 'nullable|array',
+            'days.*'      => 'string',
+            
+            'start_time'  => 'nullable|date_format:H:i',
+            'end_time'    => 'nullable|date_format:H:i|after:start_time',
+            
+            'status'      => 'required|boolean',
         ];
-
-        // قوانین برای ایجاد کلاس جدید (POST)
-        if ($this->isMethod('post')) {
-            return [
-                'title'             => 'required|string|max:255',
-                'image'             => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'category_id' => 'required|integer|exists:categories,id',
-                'coach_id'          => 'required|integer|exists:coaches,id',
-                'days'              => $daysRules,
-                'days.*'            => 'string|in:شنبه,یک‌شنبه,دوشنبه,سه‌شنبه,چهارشنبه,پنج‌شنبه,جمعه',
-                // 'time_type'         => 'required|in:custom,canceled,tba',
-                // 'start_time'        => 'required_if:time_type,custom|nullable|date_format:H:i',
-                // 'end_time'          => 'required_if:time_type,custom|nullable|date_format:H:i|after:start_time',
-            ];
-        }
-
-        // قوانین برای ویرایش کلاس (PUT/PATCH)
-        else {
-            return [
-                'title'             => 'sometimes|required|string|max:255',
-                'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // عکس در ویرایش اختیاری است
-                'category_id' => 'sometimes|required|integer|exists:categories,id',
-                'coach_id'          => 'sometimes|required|integer|exists:coaches,id',
-                'days'              => $daysRules,
-                'days.*'            => 'string|in:شنبه,یک‌شنبه,دوشنبه,سه‌شنبه,چهارشنبه,پنج‌شنبه,جمعه',
-                // 'time_type'         => 'sometimes|required|in:custom,canceled,tba',
-                // 'start_time'        => 'required_if:time_type,custom|nullable|date_format:H:i',
-                // 'end_time'          => 'required_if:time_type,custom|nullable|date_format:H:i|after:start_time',
-            ];
-        }
     }
 
     /**
-     * Get the custom error messages for validator rules.
+     * پیام‌های خطا
      */
     public function messages(): array
     {
         return [
-            'title.required' => 'وارد کردن عنوان کلاس الزامی است.',
-            'title.string'   => 'عنوان کلاس باید یک رشته متنی باشد.',
-            'title.max'      => 'عنوان کلاس نباید بیشتر از ۲۵۵ کاراکتر باشد.',
-
-            'image.required' => 'انتخاب عکس برای کلاس الزامی است.',
-            'image.image'    => 'فایل انتخاب شده باید یک تصویر معتبر باشد.',
-            'image.mimes'    => 'فرمت‌های مجاز برای تصویر: jpeg, png, jpg, gif, webp.',
-            'image.max'      => 'حجم تصویر نباید بیشتر از ۲ مگابایت باشد.',
-
-            'category_id.required' => 'انتخاب دسته‌بندی کلاس الزامی است.',
-            'category_id.integer'  => 'شناسه دسته‌بندی باید یک عدد صحیح باشد.',
-            'category_id.exists'   => 'دسته‌بندی انتخاب شده معتبر نیست.',
-
-            'coach_id.required' => 'انتخاب مربی الزامی است.',
-            'coach_id.integer'  => 'شناسه مربی باید یک عدد صحیح باشد.',
-            'coach_id.exists'   => 'مربی انتخاب شده معتبر نیست.',
-
-            'days.array' => 'روزهای کلاس باید به صورت لیستی از موارد باشند.',
-            'days.min'   => 'حداقل یک روز برای کلاس باید انتخاب شود.',
-            'days.*.in'  => 'روز انتخاب شده برای کلاس معتبر نیست.',
-
-            // 'time_type.required' => 'انتخاب نوع زمان کلاس الزامی است.',
-            // 'time_type.in'       => 'نوع زمان کلاس انتخاب شده معتبر نیست.',
-
-            // 'start_time.required_if' => 'در صورت انتخاب زمان دلخواه، وارد کردن زمان شروع الزامی است.',
-            // 'start_time.date_format' => 'فرمت زمان شروع معتبر نیست (مثال: 14:30).',
-
-            // 'end_time.required_if' => 'در صورت انتخاب زمان دلخواه، وارد کردن زمان پایان الزامی است.',
-            // 'end_time.date_format' => 'فرمت زمان پایان معتبر نیست (مثال: 16:00).',
-            // 'end_time.after'       => 'زمان پایان باید بعد از زمان شروع باشد.',
+            'title.required'      => 'وارد کردن عنوان کلاس الزامی است.',
+            'slug.unique'         => 'این اسلاگ (URL) قبلاً استفاده شده است.',
+            'coach_id.required'   => 'انتخاب مربی برای کلاس الزامی است.',
+            'coach_id.exists'     => 'مربی انتخاب شده معتبر نیست.',
+            'price.numeric'       => 'قیمت باید مقدار عددی باشد.',
+            'days.array'          => 'فرمت روزهای برگزاری معتبر نیست.',
+            'end_time.after'      => 'ساعت پایان باید بعد از ساعت شروع باشد.',
+            'image.max'           => 'حجم تصویر نباید بیشتر از ۲ مگابایت باشد.',
+            'image.image'         => 'فایل انتخابی باید تصویر باشد.',
         ];
     }
 }

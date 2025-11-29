@@ -1,155 +1,176 @@
-<div class="tab-pane fade" id="class-add" role="tabpanel" aria-labelledby="add-tab">
-    {{-- <form onsubmit="alert('کلاس جدید ذخیره شد'); return true;"> --}}
-    <div class="row g-3">
 
-        <form action="{{ route('admin.classes.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
 
-            {{-- این بخش را اضافه کنید --}}
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <strong>خطا! لطفاً موارد زیر را بررسی کنید:</strong>
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+<form action="{{ route('admin.classes.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    
+    <div class="row">
+        {{-- 🔵 ستون راست --}}
+        <div class="col-12 col-lg-8">
+            
+            {{-- کارت ۱: اطلاعات پایه --}}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-label-primary text-primary fw-bold">
+                    <i class="bx bx-file me-1"></i> اطلاعات پایه کلاس
                 </div>
-            @endif
-            {{-- پایان بخش اضافه شده --}}
-
-            <div class="row g-3">
-                {{-- بقیه فیلدهای فرم شما --}}
-
-
-
-
-                <!--image-->
-                <div class="col-md-6 form-group">
-                    <label for="image" class="form-label">آپلود عکس</label>
-                    <input type="file" class="form-control" id="image" name="image"
-                        accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/tiff" />
-                </div>
-
-                <div id="image-preview" class="mt-3">
-                    <img id="preview-img" src="#" alt="پیش‌نمایش تصویر"
-                        style="max-width: 100%; max-height: 200px; display: none;" />
-                </div>
-                @error('image')
-                    <div class="text-danger mt-2">{{ $message }}</div>
-                @enderror
-
-                <!--/image-->
-                <!-- عنوان کلاس -->
-                <div class="col-md-6 form-group">
-                    <label for="name" class="form-label">عنوان کلاس </label>
-                    <input type="text" class="form-control" id="name" name="title"
-                        placeholder="مثال: برنامه‌نویسی پایتون" required>
-                </div>
-                <!-- دسته‌بندی کلاس‌ها -->
-                <!-- دسته‌بندی کلاس‌ها -->
-                <div class="col-md-6">
-                    <label class="form-label" for="class-category">دسته‌بندی کلاس‌ها</label>
-                    {{-- ویژگی name برای ارسال category_id به کنترلر ضروری است --}}
-                    <select class="form-select" id="class-category" name="category_id" required>
-                        <option value="" selected disabled>انتخاب کنید</option>
-
-                        {{-- حلقه برای نمایش داینامیک دسته‌بندی‌ها --}}
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                    @error('category_id')
-                        <div class="text-danger mt-2">{{ $message }}</div>
-                    @enderror
-                </div>
-                <!-- مربی -->
-                <!-- مربی -->
-                <div class="col-md-6">
-                    <label class="form-label" for="class-coach">مربی</label>
-                    {{-- ویژگی name برای ارسال coach_id به کنترلر ضروری است --}}
-                    <select class="form-select" id="class-coach" name="coach_id" required>
-                        <option value="" selected disabled>انتخاب کنید</option>
-
-                        {{-- حلقه برای نمایش داینامیک مربیان --}}
-                        @foreach ($coaches as $coach)
-                            <option value="{{ $coach->id }}">
-                                {{ $coach->full_name }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                    @error('coach_id')
-                        <div class="text-danger mt-2">{{ $message }}</div>
-                    @enderror
-                </div>
-                <!-- روزهای کلاس (چک‌باکس) -->
-                <!-- روزهای کلاس (چک‌باکس) -->
-                <div class="col-md-12">
-                    <label class="form-label">روزهای کلاس</label>
-                    <div class="d-flex flex-wrap gap-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="shanbe"
-                                value="شنبه">
-                            <label class="form-check-label" for="shanbe">شنبه</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="yekshanbe"
-                                value="یک‌شنبه">
-                            <label class="form-check-label" for="yekshanbe">یک‌شنبه</label>
-                        </div>
-                        <!-- بقیه روزها نیز به همین شکل با name="days[]" -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="doshanbe"
-                                value="دوشنبه">
-                            <label class="form-check-label" for="doshanbe">دوشنبه</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="seshanbe"
-                                value="سه‌شنبه">
-                            <label class="form-check-label" for="seshanbe">سه‌شنبه</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="chaharshanbe"
-                                value="چهارشنبه">
-                            <label class="form-check-label" for="chaharshanbe">چهارشنبه</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="panjshanbe"
-                                value="پنج‌شنبه">
-                            <label class="form-check-label" for="panjshanbe">پنج‌شنبه</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="days[]" id="jome"
-                                value="جمعه">
-                            <label class="form-check-label" for="jome">جمعه</label>
-                        </div>
-                    </div>
-                </div>
-                <!-- زمان کلاس -->
-                <div class="col-md-12">
-               
-                    <div id="custom-time-input" class="mt-2">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label" for="class-start-time">زمان شروع</label>
-                                <input class="form-control" type="time" id="class-start-time" required />
+                <div class="card-body mt-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">عنوان کلاس <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-dumbbell"></i></span>
+                                <input type="text" name="title" class="form-control" value="{{ old('title') }}" placeholder="مثال: آموزش یوگا پیشرفته" required>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="class-end-time">زمان پایان</label>
-                                <input class="form-control" type="time" id="class-end-time" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">لینک یکتا (Slug) <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-link"></i></span>
+                                <input type="text" name="slug" class="form-control text-start" dir="ltr" value="{{ old('slug') }}" placeholder="yoga-advanced" required>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- دکمه‌ها -->
-                <div class="col-12 d-flex justify-content-between">
-                    <button type="reset" class="btn btn-label-secondary">انصراف</button>
-                    <button type="submit" class="btn btn-primary">ذخیره</button>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">مربی کلاس <span class="text-danger">*</span></label>
+                            <select name="coach_id" class="form-select">
+                                <option value="">انتخاب مربی...</option>
+                                @if(isset($coaches) && count($coaches) > 0)
+                                    @foreach($coaches as $coach)
+                                        <option value="{{ $coach->id }}" {{ old('coach_id') == $coach->id ? 'selected' : '' }}>
+                                            {{ $coach->name ?? $coach->full_name ?? $coach->title ?? ($coach->first_name . ' ' . $coach->last_name) ?? 'مربی #' . $coach->id }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>⚠️ هیچ مربی یافت نشد</option>
+                                @endif
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">دسته‌بندی</label>
+                            <select name="category_id" class="form-select">
+                                <option value="">بدون دسته‌بندی</option>
+                                @if(isset($categories) && count($categories) > 0)
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->title ?? $cat->name ?? $cat->caption ?? 'دسته #' . $cat->id }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>⚠️ دسته‌بندی موجود نیست</option>
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات کامل</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="درباره این کلاس توضیح دهید...">{{ old('description') }}</textarea>
+                    </div>
                 </div>
             </div>
-        </form>
+
+            {{-- کارت ۲: زمان‌بندی --}}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-label-info text-info fw-bold">
+                    <i class="bx bx-calendar me-1"></i> برنامه زمانی
+                </div>
+                <div class="card-body mt-3">
+                    
+                    <label class="form-label d-block mb-2">روزهای برگزاری (چند مورد انتخاب کنید)</label>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        @php 
+                            $daysMap = ['Saturday'=>'شنبه', 'Sunday'=>'یکشنبه', 'Monday'=>'دوشنبه', 'Tuesday'=>'سه‌شنبه', 'Wednesday'=>'چهارشنبه', 'Thursday'=>'پنج‌شنبه', 'Friday'=>'جمعه']; 
+                        @endphp
+                        @foreach($daysMap as $en => $fa)
+                            <input type="checkbox" class="btn-check" id="create_day_{{ $en }}" name="days[]" value="{{ $en }}" {{ in_array($en, old('days', [])) ? 'checked' : '' }}>
+                            {{-- 🟩 استفاده از کلاس اختصاصی rounded-pill-force --}}
+                            <label class="btn btn-outline-primary rounded-pill-force" for="create_day_{{ $en }}">
+                                {{ $fa }}
+                            </label>
+                        @endforeach
+                    </div>
+
+                   <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ساعت شروع</label>
+                            <input type="text" name="start_time" class="form-control time-input-styled" dir="ltr" placeholder="انتخاب کنید..." value="{{ old('start_time') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ساعت پایان</label>
+                            <input type="text" name="end_time" class="form-control time-input-styled" dir="ltr" placeholder="انتخاب کنید..." value="{{ old('end_time') }}">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {{-- 🟣 ستون چپ --}}
+        <div class="col-12 col-lg-4">
+            {{-- کارت ۳: تصویر --}}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header fw-bold">
+                    <i class="bx bx-image me-1"></i> تصویر کلاس
+                </div>
+                <div class="card-body text-center">
+                    <div class="image-preview-wrapper border rounded p-1 bg-light mb-3 mx-auto" style="width: 100%; max-width: 300px; aspect-ratio: 16/9; overflow: hidden; position: relative;">
+                        <img id="create-img-preview" src="https://placehold.co/600x400?text=No+Image" alt="Preview" class="w-100 h-100 rounded" style="object-fit: cover; display: block;">
+                    </div>
+                    <label for="create_image_input" class="btn btn-primary w-100">
+                        <i class="bx bx-cloud-upload me-2"></i> انتخاب تصویر
+                    </label>
+                    <input type="file" id="create_image_input" name="image" class="d-none" accept="image/*" onchange="previewCreateImage(event)">
+                    <div class="form-text small mt-2">فرمت: JPG, PNG | حداکثر: 2MB</div>
+                </div>
+            </div>
+
+            {{-- کارت ۴: قیمت --}}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header fw-bold">
+                    <i class="bx bx-dollar me-1"></i> شرایط ثبت‌نام
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">شهریه کلاس</label>
+                        <div class="input-group">
+                            <input type="number" name="price" class="form-control" value="{{ old('price') }}" placeholder="0">
+                            <span class="input-group-text">تومان</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ظرفیت (نفر)</label>
+                        <input type="number" name="capacity" class="form-control" value="{{ old('capacity') }}" placeholder="مثال: 20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">وضعیت انتشار</label>
+                        <select name="status" class="form-select">
+                            <option value="1" {{ old('status', '1') == '1' ? 'selected' : '' }}>🟢 فعال</option>
+                            <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>🔴 غیرفعال</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow">
+                        <i class="bx bx-check-circle me-1"></i> ثبت نهایی کلاس
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+</form>
+
+
+{{-- اضافه کردن JS فلت‌پیکر --}}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr(".time-input-styled", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            // ظاهر تمیز و ساده
+            static: true 
+        });
+    });
+</script>

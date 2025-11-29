@@ -14,28 +14,37 @@ return new class extends Migration
         Schema::create('classes', function (Blueprint $table) {
             $table->id();
             
-            // مرتبط با فیلد "عنوان کلاس"
-            $table->string('title');
-
-            // مرتبط با فیلد "عکس"
-            $table->string('image')->nullable();
-
-            // کلید خارجی برای "دسته‌بندی کلاس‌ها"
-                 $table->foreignId('category_id')->nullable()->constrained('categories') ->onDelete('set null');
-                 
-
-                  $table->foreignId('coach_id')->constrained('coaches')->onDelete('cascade');
-                 
-                
-
-            // مرتبط با چک‌باکس‌های "روزهای کلاس" - به صورت JSON ذخیره می‌شود
-            $table->json('days')->nullable();
-
-        
+            $table->string('title'); // عنوان کلاس
             
-            // // برای زمان شروع و پایان که فقط در حالت "custom" مقدار دارند
-            // $table->time('start_time')->nullable();
-            // $table->time('end_time')->nullable();
+            // 🟩 افزودن اسلاگ برای سئو و آدرس‌دهی
+            $table->string('slug')->unique(); 
+
+            // 🟩 افزودن توضیحات (نمیشه کلاس بدون توضیحات باشه!)
+            $table->text('description')->nullable();
+
+            $table->string('image')->nullable(); // تصویر
+
+              $table->unsignedBigInteger('price')->nullable(); 
+            $table->integer('capacity')->nullable();
+
+            // روابط (Relations) - کدهای خودت عالی بود، فقط کمی مرتب‌تر شد
+            $table->foreignId('category_id')
+                  ->nullable()
+                  ->constrained('categories')
+                  ->onDelete('set null'); // اگر دسته‌بندی پاک شد، کلاس بی‌دسته بمونه (حذف نشه)
+
+            $table->foreignId('coach_id')
+                  ->constrained('coaches')
+                  ->onDelete('cascade'); // اگر مربی پاک شد، کلاس‌هایش هم پاک شود
+
+            // زمان‌بندی (Schedule)
+            $table->json('days')->nullable(); // ذخیره روزها: ["Saturday", "Monday"]
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
+
+            // 🟩 وضعیت (برای مخفی کردن کلاس بدون حذف)
+            $table->boolean('status')->default(true);
+
             $table->timestamps();
         });
     }
