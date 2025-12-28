@@ -3,156 +3,106 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CoachRequest; // استفاده از ریکوئست مخصوص مربی
-use App\Models\Content\Coach;      // استفاده از مدل مربی
-use Illuminate\Http\Request;
+use App\Models\Content\Coach;
+use App\Http\Requests\CoachRequest;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CoachController extends Controller
 {
     /**
-     * نمایش لیست مربیان
+     * نمایش لیست مربی‌ها
      */
     public function index()
     {
-        // دریافت آخرین مربیان ثبت شده
-        $coaches = Coach::latest()->get();
-    
-         // ¡¡¡مهم!!! دسترسی به آرایه سطوح تحصیلی
-        $educationLevels = Coach::$educationLevels;
-    
-        // ارسال هر دو متغیر به ویوی اصلی لیست
-        return view('Admin.Coach.List', compact('coaches', 'educationLevels'));
+        // 🟩 استفاده از صفحه‌بندی و مرتب‌سازی
+        $coaches = Coach::orderBy('sort_order', 'asc')->latest()->paginate(10);
+        // 🟩 مسیر ویو طبق ساختار پوشه‌بندی شما (Admin/Coach/List)
+        return view('Admin.Coach.List', compact('coaches'));
     }
 
     /**
-     * نمایش فرم ایجاد مربی جدید
-     * (این متد در صورت استفاده از تب، ممکن است مستقیماً استفاده نشود ولی برای کامل بودن CRUD وجود دارد)
+     * نمایش فرم ایجاد
      */
     public function create()
     {
-
-  // دسترسی به آرایه سطوح تحصیلی از مدل Coach
-        $educationLevels = Coach::$educationLevels;
-
-        // ارسال آرایه به ویو
-        return view('Admin.Coach.Create', compact('educationLevels'));
+        return view('Admin.Coach.Create');
     }
 
     /**
-     * ذخیره مربی جدید در دیتابیس
+     * ذخیره مربی جدید
      */
     public function store(CoachRequest $request)
     {
-        // اعتبارسنجی و دریافت داده‌های معتبر
-        $data = $request->validated();
+        $inputs = $request->validated();
 
-        // تبدیل رشته حوزه‌های تخصصی (جدا شده با کاما) به آرایه
-        if (!empty($data['specialties'])) {
-            $data['specialties'] = array_map('trim', explode(',', $data['specialties']));
-        }
-
-        // مدیریت آپلود تصویر
+        // 🟩 آپلود تصویر در پوشه public/coaches
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $destinationPath = public_path('Admin/assets/img/coach/');
-                $image->move($destinationPath, $filename);
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر. لطفاً مجدداً تلاش کنید.'])->withInput();
-            }
+            $inputs['image'] = $request->file('image')->store('coaches', 'public');
         }
 
-        // ایجاد رکورد جدید در دیتابیس
-        Coach::create($data);
+        // 🟩 ساخت اسلاگ (اگر خالی بود از روی نام بساز)
+        if (empty($inputs['slug'])) {
+            $inputs['slug'] = Str::slug($inputs['full_name']);
+        }
 
-        // بازگشت به لیست همراه با پیام موفقیت
-        return redirect()->route('admin.coaches.index')->with('success', 'مربی جدید با موفقیت ایجاد شد!')->with('show_list_tab', true);
-                     
-                         
+        // 🟩 تبدیل رشته تخصص‌ها به آرایه (چون دیتابیس JSON است)
+        if (!empty($inputs['specialties']) && is_string($inputs['specialties'])) {
+            $inputs['specialties'] = array_map('trim', explode(',', $inputs['specialties']));
+        }
+
+        Coach::create($inputs);
+
+        return redirect()->route('admin.coaches.index')
+            ->with('swal-success', 'مربی جدید با موفقیت ثبت شد');
     }
 
     /**
-     * نمایش فرم ویرایش مربی
-     * (برای بارگذاری داده‌ها در تب ویرایش استفاده خواهد شد)
+     * نمایش فرم ویرایش
      */
     public function edit(Coach $coach)
     {
-
- // دسترسی به آرایه سطوح تحصیلی
-        $educationLevels = Coach::$educationLevels;
-
-        // ارسال داده‌های مربی و سطوح تحصیلی به ویوی ویرایش
-        return view('Admin.Coach.Edit', compact('coach', 'educationLevels'));
+        return view('Admin.Coach.Edit', compact('coach'));
     }
 
     /**
-     * به‌روزرسانی اطلاعات مربی
+     * بروزرسانی اطلاعات
      */
     public function update(CoachRequest $request, Coach $coach)
     {
-        $data = $request->validated();
+        $inputs = $request->validated();
 
-        //تبدیل رشته حوزه‌های تخصصی به آرایه در صورت وجود
-        if (isset($data['specialties'])) {
-            $data['specialties'] = $data['specialties'] ? array_map('trim', explode(',', $data['specialties'])) : null;
-        }
-
-
-// // در متد update، جایگزین کد قبلی کنید
-// if (isset($data['specialties'])) {
-//     // فیلتر کردن آیتم‌های خالی که ممکن است از فرم ارسال شوند
-//     $data['specialties'] = array_filter($data['specialties']);
-// }
-
-
-
-        // مدیریت آپلود تصویر جدید
+        // 🟩 مدیریت تصویر: حذف قبلی و آپلود جدید
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            if ($image->isValid()) {
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $destinationPath = public_path('Admin/assets/img/coach/');
-                $image->move($destinationPath, $filename);
-
-                // حذف تصویر قدیمی در صورت وجود
-                if ($coach->image && file_exists(public_path('Admin/assets/img/coach/' . $coach->image))) {
-                    unlink(public_path('Admin/assets/img/coach/' . $coach->image));
-                }
-
-                $data['image'] = $filename;
-            } else {
-                return redirect()->back()->withErrors(['image' => 'خطا در آپلود تصویر جدید.'])->withInput();
+            if (!empty($coach->image) && Storage::disk('public')->exists($coach->image)) {
+                Storage::disk('public')->delete($coach->image);
             }
+            $inputs['image'] = $request->file('image')->store('coaches', 'public');
         }
 
-        // به‌روزرسانی رکورد در دیتابیس
-        $coach->update($data);
+        // 🟩 مدیریت اسلاگ در ویرایش
+        if (empty($inputs['slug'])) {
+            $inputs['slug'] = Str::slug($inputs['full_name']);
+        }
 
-        // بازگشت به لیست همراه با پیام موفقیت
+        // 🟩 تبدیل تخصص‌ها به آرایه
+        if (isset($inputs['specialties']) && is_string($inputs['specialties'])) {
+            $inputs['specialties'] = array_map('trim', explode(',', $inputs['specialties']));
+        }
+
+        $coach->update($inputs);
+
         return redirect()->route('admin.coaches.index')
-                         ->with('success', 'اطلاعات مربی با موفقیت به‌روزرسانی شد!')
-                         ->with('show_list_tab', true);
+            ->with('swal-success', 'اطلاعات مربی با موفقیت ویرایش شد');
     }
 
     /**
-     * حذف مربی از دیتابیس
+     * حذف (Soft Delete)
      */
     public function destroy(Coach $coach)
     {
-        // حذف تصویر مرتبط با مربی از پوشه public
-        if ($coach->image && file_exists(public_path('Admin/assets/img/coach/' . $coach->image))) {
-            unlink(public_path('Admin/assets/img/coach/' . $coach->image));
-        }
-
-        // حذف رکورد از دیتابیس
         $coach->delete();
-
-        // بازگشت به لیست همراه با پیام موفقیت
         return redirect()->route('admin.coaches.index')
-                         ->with('success', 'مربی با موفقیت حذف شد!')
-                         ->with('show_list_tab', true);
+            ->with('swal-success', 'مربی به سطل زباله منتقل شد');
     }
 }

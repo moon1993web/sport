@@ -1,136 +1,220 @@
-@extends('Admin.Layouts.master') {{-- فرض بر اینکه شما یک layout اصلی دارید --}}
+@extends('Admin.Layouts.Master')
 
 @section('content')
-    <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="py-3 mb-4">ویرایش اطلاعات مربی: {{ $coach->full_name }}</h4>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4">
+        <span class="text-muted fw-light">مدیریت مربیان /</span> <span class="fw-bold">ویرایش مربی</span>
+    </h4>
 
-        {{-- نمایش هرگونه خطا در بالای فرم --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    <form action="{{ route('admin.coaches.update', $coach->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
-        <div class="card">
-            <div class="card-body">
-                {{-- فرم ویرایش --}}
-                <form action="{{ route('admin.coaches.update', $coach->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT') {{-- استفاده از متد PUT برای به‌روزرسانی --}}
+        <div class="row">
+            {{-- 🔵 ستون راست (محتوای اصلی) --}}
+            <div class="col-12 col-lg-8">
 
-                    <div class="row g-3">
-                        <!-- تصویر فعلی و آپلود تصویر جدید -->
-                        <div class="col-md-6">
-                            <label for="image" class="form-label">آپلود عکس جدید (اختیاری)</label>
-                            <input type="file" class="form-control" id="image" name="image"
-                                accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" />
+                {{-- کارت ۱: اطلاعات هویتی --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-label-primary text-primary fw-bold">
+                        <i class="bx bx-id-card me-1"></i> اطلاعات هویتی
+                    </div>
+                    <div class="card-body mt-3">
+                        <div class="row">
+                            {{-- نام و نام خانوادگی --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-user"></i></span>
+                                    <input type="text" name="full_name" class="form-control" 
+                                           value="{{ old('full_name', $coach->full_name) }}" placeholder="مثال: علی رضایی" required>
+                                </div>
+                            </div>
 
-                            <div class="mt-3">
-                                <p>تصویر فعلی:</p>
-                                @if ($coach->image && file_exists(public_path('Admin/assets/img/coach/' . $coach->image)))
-                                    <img id="current-image"
-                                        src="{{ asset('Admin/assets/img/coach/' . $coach->image) }}"
-                                        alt="تصویر فعلی" class="rounded" style="max-width: 150px; max-height: 150px;" />
-                                @else
-                                    <p>تصویری وجود ندارد.</p>
-                                @endif
+                            {{-- 🟩 اسلاگ (Slug) --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">لینک یکتا (Slug) <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-link"></i></span>
+                                    <input type="text" name="slug" class="form-control text-start" dir="ltr" 
+                                           value="{{ old('slug', $coach->slug) }}" required>
+                                </div>
+                                <div class="form-text small">برای سئو بهتر، انگلیسی وارد کنید (مثال: ali-rezaei).</div>
                             </div>
                         </div>
 
-                        <!-- پیش‌نمایش تصویر جدید -->
-                        <div class="col-md-6">
-                            <label class="form-label">پیش‌نمایش تصویر جدید</label>
-                            <div id="image-preview" class="mt-2">
-                                <img id="preview-img" src="#" alt="پیش‌نمایش تصویر جدید"
-                                    style="max-width: 150px; max-height: 150px; display: none;" class="rounded" />
+                        <div class="row">
+                            {{-- ایمیل --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ایمیل <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                    <input type="email" name="email" class="form-control" dir="ltr"
+                                           value="{{ old('email', $coach->email) }}" required>
+                                </div>
+                            </div>
+
+                            {{-- موبایل --}}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">شماره موبایل <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-phone"></i></span>
+                                    <input type="text" name="phone_number" class="form-control" dir="ltr"
+                                           value="{{ old('phone_number', $coach->phone_number) }}" required>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- نام و نام خانوادگی -->
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-fullname">نام و نام خانوادگی</label>
-                            <input class="form-control" type="text" id="coach-fullname" name="full_name"
-                                placeholder="نام و نام خانوادگی" value="{{ old('full_name', $coach->full_name) }}" required />
-                        </div>
-
-                        <!-- درجه تحصیلات -->
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-education">درجه تحصیلات</label>
-                            <select class="form-select" id="coach-education" name="education" required>
-                                <option value="">انتخاب کنید</option>
-                                @foreach ($educationLevels as $key => $value)
-                                    <option value="{{ $key }}"
-                                        {{ old('education', $coach->education) == $key ? 'selected' : '' }}>
-                                        {{ $value }}
-                                    </option>
-                                @endforeach
+                {{-- کارت ۲: رزومه و تحصیلات --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-label-info text-info fw-bold">
+                        <i class="bx bx-file me-1"></i> رزومه و سوابق
+                    </div>
+                    <div class="card-body mt-3">
+                        <div class="mb-3">
+                            <label class="form-label">تحصیلات</label>
+                            <select name="education" class="form-select">
+                                <option value="diploma" {{ old('education', $coach->education) == 'diploma' ? 'selected' : '' }}>دیپلم</option>
+                                <option value="bachelor" {{ old('education', $coach->education) == 'bachelor' ? 'selected' : '' }}>کارشناسی</option>
+                                <option value="master" {{ old('education', $coach->education) == 'master' ? 'selected' : '' }}>کارشناسی ارشد</option>
+                                <option value="phd" {{ old('education', $coach->education) == 'phd' ? 'selected' : '' }}>دکترا</option>
                             </select>
                         </div>
 
-                        <!-- توضیحات کوتاه -->
-                        <div class="col-md-12">
-                            <label class="form-label" for="coach-short-desc">توضیحات کوتاه</label>
-                            <textarea class="form-control" id="coach-short-desc" name="short_description" rows="3"
-                                placeholder="توضیحات کوتاه درباره مربی" required>{{ old('short_description', $coach->short_description) }}</textarea>
+                        <div class="mb-3">
+                            <label class="form-label">توضیحات کوتاه (کارت مربی)</label>
+                            <textarea name="short_description" class="form-control" rows="2">{{ old('short_description', $coach->short_description) }}</textarea>
                         </div>
 
-                        <!-- شبکه‌های اجتماعی -->
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-social-linkedin">لینکدین</label>
-                            <input class="form-control" type="url" name="linkedin_url" id="coach-social-linkedin"
-                                placeholder="لینک پروفایل لینکدین" value="{{ old('linkedin_url', $coach->linkedin_url) }}" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-social-instagram">اینستاگرام</label>
-                            <input class="form-control" type="url" name="instagram_url" id="coach-social-instagram"
-                                placeholder="لینک پروفایل اینستاگرام"
-                                value="{{ old('instagram_url', $coach->instagram_url) }}" />
-                        </div>
-
-                        <!-- بیوگرافی -->
-                        <div class="col-md-12">
-                            <label class="form-label" for="coach-bio">بیوگرافی</label>
-                            <textarea class="form-control" id="coach-bio" name="bio" rows="5"
-                                placeholder="بیوگرافی کامل مربی">{{ old('bio', $coach->bio) }}</textarea>
-                        </div>
-
-                        <!-- شماره تلفن -->
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-phone">شماره تلفن</label>
-                            <input class="form-control" type="tel" id="coach-phone" name="phone_number"
-                                placeholder="09123456789" pattern="[0-9]{11}"
-                                value="{{ old('phone_number', $coach->phone_number) }}" required />
-                        </div>
-
-                        <!-- ایمیل -->
-                        <div class="col-md-6">
-                            <label class="form-label" for="coach-email">ایمیل</label>
-                            <input class="form-control text-end" type="email" id="coach-email" name="email"
-                                placeholder="example@domain.com" value="{{ old('email', $coach->email) }}" required />
-                        </div>
-
-                        <!-- حوزه‌های تخصصی -->
-                        <div class="col-md-12">
-                            <label class="form-label" for="coach-specialties">حوزه‌های تخصصی (با کاما جدا کنید)</label>
-                            <input class="form-control" type="text" id="coach-specialties" name="specialties"
-                                placeholder="مثال: برنامه‌نویسی، طراحی UI/UX، مدیریت پروژه"
-                                {{-- کد PHP آرایه تخصص‌ها را به یک رشته جدا شده با کاما تبدیل می‌کند --}}
-                                value="{{ old('specialties', implode(', ', $coach->specialties ?? [])) }}" />
-                        </div>
-
-                        <!-- دکمه‌ها -->
-                        <div class="col-12 d-flex justify-content-between">
-                            <a href="{{ route('admin.coaches.index') }}" class="btn btn-label-secondary">بازگشت</a>
-                            <button type="submit" class="btn btn-primary">به‌روزرسانی</button>
+                        <div class="mb-3">
+                            <label class="form-label">بیوگرافی کامل</label>
+                            <textarea name="bio" class="form-control" rows="4">{{ old('bio', $coach->bio) }}</textarea>
                         </div>
                     </div>
-                </form>
+                </div>
+
+                {{-- کارت ۳: تخصص و شبکه اجتماعی --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-label-warning text-warning fw-bold">
+                        <i class="bx bx-share-alt me-1"></i> تخصص‌ها و ارتباطات
+                    </div>
+                    <div class="card-body mt-3">
+                        <div class="mb-3">
+                            <label class="form-label">تخصص‌ها (با کاما جدا کنید)</label>
+                            {{-- 🟩 تبدیل آرایه جیسون به رشته برای نمایش در اینپوت --}}
+                            @php
+                                $specialtiesString = is_array($coach->specialties) ? implode(',', $coach->specialties) : $coach->specialties;
+                            @endphp
+                            <input type="text" name="specialties" class="form-control" 
+                                   value="{{ old('specialties', $specialtiesString) }}" 
+                                   placeholder="بدنسازی, کراس‌فیت, تغذیه">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">اینستاگرام</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bxl-instagram"></i></span>
+                                    <input type="url" name="instagram_url" class="form-control" dir="ltr"
+                                           value="{{ old('instagram_url', $coach->instagram_url) }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">لینکدین</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bxl-linkedin"></i></span>
+                                    <input type="url" name="linkedin_url" class="form-control" dir="ltr"
+                                           value="{{ old('linkedin_url', $coach->linkedin_url) }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- 🟣 ستون چپ (سایدبار) --}}
+            <div class="col-12 col-lg-4">
+                
+                {{-- کارت ۴: تصویر --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header fw-bold">
+                        <i class="bx bx-image me-1"></i> تصویر پروفایل
+                    </div>
+                    <div class="card-body text-center">
+                        {{-- کادر پیش‌نمایش --}}
+                        <div class="image-preview-wrapper border rounded p-1 bg-light mb-3 mx-auto" 
+                             style="width: 150px; height: 150px; overflow: hidden; position: relative; border-radius: 50% !important;">
+                             
+                            {{-- 🟩 لاجیک نمایش تصویر: اگر جدید انتخاب شد (JS) یا اگر قدیمی وجود دارد --}}
+                            <img id="edit-img-preview" 
+                                 src="{{ $coach->image ? asset('storage/' . $coach->image) : asset('assets/img/avatars/1.png') }}" 
+                                 alt="Coach Preview" 
+                                 class="w-100 h-100" 
+                                 style="object-fit: cover; display: block;">
+                        </div>
+
+                        <label for="edit_image_input" class="btn btn-primary w-100">
+                            <i class="bx bx-cloud-upload me-2"></i> تغییر تصویر
+                        </label>
+                        <input type="file" id="edit_image_input" name="image" class="d-none" accept="image/*" onchange="previewEditImage(event)">
+                        <div class="form-text small mt-2">حداکثر حجم: 2MB</div>
+                    </div>
+                </div>
+
+                {{-- کارت ۵: وضعیت و انتشار --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header fw-bold">
+                        <i class="bx bx-check-shield me-1"></i> وضعیت انتشار
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">وضعیت حساب</label>
+                            <select name="is_active" class="form-select">
+                                <option value="1" {{ old('is_active', $coach->is_active) == 1 ? 'selected' : '' }}>🟢 فعال</option>
+                                <option value="0" {{ old('is_active', $coach->is_active) == 0 ? 'selected' : '' }}>🔴 غیرفعال</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">ترتیب نمایش</label>
+                            <input type="number" name="sort_order" class="form-control" 
+                                   value="{{ old('sort_order', $coach->sort_order) }}" placeholder="0">
+                        </div>
+
+                        <hr>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold shadow">
+                                <i class="bx bx-save me-1"></i> ذخیره تغییرات
+                            </button>
+                            <a href="{{ route('admin.coaches.index') }}" class="btn btn-label-secondary w-100 py-2">
+                                بازگشت
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
-@endsection
+    </form>
+</div>
 
+{{-- اسکریپت پیش‌نمایش عکس --}}
+<script>
+    function previewEditImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('edit-img-preview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+@endsection

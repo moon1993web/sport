@@ -1,202 +1,179 @@
-   <div class="tab-pane fade" id="coach-add" role="tabpanel" aria-labelledby="add-tab">
-       <form action="{{ route('admin.coaches.store') }}" method="POST" enctype="multipart/form-data">
-           @csrf
-           <div class="row g-3">
+<form action="{{ route('admin.coaches.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+
+    <div class="row">
+        {{-- 🔵 ستون راست (اطلاعات اصلی) --}}
+        <div class="col-12 col-lg-8">
+
+            {{-- کارت ۱: اطلاعات هویتی --}}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-label-primary text-primary fw-bold">
+                    <i class="bx bx-user-pin me-1"></i> اطلاعات فردی مربی
+                </div>
+                <div class="card-body mt-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-user"></i></span>
+                                <input type="text" name="full_name" class="form-control" placeholder="مثال: محمد محمدی" value="{{ old('full_name') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">لینک یکتا (Slug) <small class="text-muted">(اختیاری)</small></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-link"></i></span>
+                                <input type="text" name="slug" class="form-control" dir="ltr" placeholder="mohammad-mohammadi" value="{{ old('slug') }}">
+                            </div>
+                            <div class="form-text font-size-12">اگر خالی بماند، خودکار ساخته می‌شود.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">شماره تماس <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-phone"></i></span>
+                                <input type="text" name="phone_number" class="form-control" dir="ltr" placeholder="0912xxxxxxx" value="{{ old('phone_number') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ایمیل <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" dir="ltr" placeholder="info@example.com" value="{{ old('email') }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- کارت ۲: رزومه و سوابق --}}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-label-info text-info fw-bold">
+                    <i class="bx bx-file me-1"></i> سوابق و تحصیلات
+                </div>
+                <div class="card-body mt-3">
+                    <div class="mb-3">
+                        <label class="form-label">سطح تحصیلات <span class="text-danger">*</span></label>
+                        <select name="education" class="form-select" required>
+                            <option value="" disabled selected>انتخاب کنید...</option>
+                            <option value="diploma" {{ old('education') == 'diploma' ? 'selected' : '' }}>دیپلم</option>
+                            <option value="bachelor" {{ old('education') == 'bachelor' ? 'selected' : '' }}>کارشناسی</option>
+                            <option value="master" {{ old('education') == 'master' ? 'selected' : '' }}>کارشناسی ارشد</option>
+                            <option value="phd" {{ old('education') == 'phd' ? 'selected' : '' }}>دکترا</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات کوتاه (برای کارت مربی) <span class="text-danger">*</span></label>
+                        <textarea name="short_description" class="form-control" rows="2" maxlength="255" required placeholder="خلاصه ای از مهارت‌ها...">{{ old('short_description') }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">بیوگرافی کامل</label>
+                        <textarea name="bio" class="form-control" rows="4" placeholder="داستان زندگی حرفه‌ای مربی...">{{ old('bio') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {{-- کارت ۳: تخصص و شبکه اجتماعی --}}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-label-warning text-warning fw-bold">
+                    <i class="bx bx-share-alt me-1"></i> تخصص‌ها و سوشال
+                </div>
+                <div class="card-body mt-3">
+                    <div class="mb-3">
+                        <label class="form-label">تخصص‌ها</label>
+                        <input type="text" name="specialties" class="form-control" placeholder="مثال: بدنسازی, کراس‌فیت, تغذیه (با ویرگول جدا کنید)" value="{{ old('specialties') }}">
+                        <div class="form-text text-muted">کلمات را با علامت کاما (,) جدا کنید.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اینستاگرام</label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bxl-instagram"></i></span>
+                                <input type="url" name="instagram_url" class="form-control" dir="ltr" placeholder="https://instagram.com/..." value="{{ old('instagram_url') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">لینکدین</label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="bx bxl-linkedin"></i></span>
+                                <input type="url" name="linkedin_url" class="form-control" dir="ltr" placeholder="https://linkedin.com/in/..." value="{{ old('linkedin_url') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- 🟣 ستون چپ (سایدبار) --}}
+        <div class="col-12 col-lg-4">
             
+            {{-- کارت ۴: تصویر --}}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header fw-bold">
+                    <i class="bx bx-image me-1"></i> تصویر پروفایل
+                </div>
+                <div class="card-body text-center">
+                    {{-- دایره پیش‌نمایش --}}
+                    <div class="image-preview-wrapper border rounded-circle p-1 bg-light mb-3 mx-auto shadow-sm" 
+                         style="width: 150px; height: 150px; overflow: hidden; position: relative;">
+                        <img id="create-img-preview" src="{{ asset('assets/img/avatars/1.png') }}" alt="Preview" 
+                             class="w-100 h-100 rounded-circle" style="object-fit: cover; display: block;">
+                    </div>
 
+                    <label for="create_image_input" class="btn btn-primary w-100">
+                        <i class="bx bx-cloud-upload me-2"></i> انتخاب تصویر
+                    </label>
+                    <input type="file" id="create_image_input" name="image" class="d-none" accept="image/*" onchange="previewCreateImage(event)" required>
+                    <div class="form-text small mt-2">فرمت: JPG, PNG | حداکثر: 2MB</div>
+                </div>
+            </div>
 
-               <!--image-->
-               <div class="col-md-6 form-group">
-                   <label for="image" class="form-label">آپلود عکس</label>
-                   <input type="file" class="form-control" id="image" name="image"
-                       accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/tiff" />
-               </div>
+            {{-- کارت ۵: تنظیمات --}}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header fw-bold">
+                    <i class="bx bx-slider-alt me-1"></i> تنظیمات نمایش
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" checked>
+                        <label class="form-check-label" for="isActive">مربی فعال باشد</label>
+                    </div>
 
-               <div id="image-preview" class="mt-3">
-                   <img id="preview-img" src="#" alt="پیش‌نمایش تصویر"
-                       style="max-width: 100%; max-height: 200px; display: none;" />
-               </div>
-               @error('image')
-                   <div class="text-danger mt-2">{{ $message }}</div>
-               @enderror
+                    <div class="mb-3">
+                        <label class="form-label">ترتیب نمایش</label>
+                        <input type="number" name="sort_order" class="form-control" value="{{ old('sort_order', 0) }}">
+                    </div>
 
-               <!--/image-->
+                    <hr>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow">
+                        <i class="bx bx-check-circle me-1"></i> ثبت مربی جدید
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
+{{-- اسکریپت جاوااسکریپت برای پیش‌نمایش عکس --}}
+<script>
+    function previewCreateImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('create-img-preview');
 
-
-
-
-
-               <!-- نام و نام خانوادگی -->
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-fullname">نام و نام خانوادگی</label>
-                   <input class="form-control" type="text" id="coach-fullname" name="full_name"
-                       placeholder="نام و نام خانوادگی" required />
-               </div>
-
-
-               <!-- درجه تحصیلات -->
-
-
-               <!-- درجه تحصیلات -->
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-education">درجه تحصیلات</label>
-                   {{-- اضافه کردن name="education" برای ارسال داده به کنترلر --}}
-                   <select class="form-select" id="coach-education" name="education" required>
-                       <option value="" selected disabled>انتخاب کنید</option>
-                       {{-- حلقه برای نمایش داینامیک گزینه‌ها --}}
-                       @foreach ($educationLevels as $key => $value)
-                           {{-- استفاده از old() برای حفظ مقدار قبلی در صورت بروز خطا --}}
-                           <option value="{{ $key }}" {{ old('education') == $key ? 'selected' : '' }}>
-                               {{ $value }}</option>
-                       @endforeach
-                   </select>
-                   {{-- نمایش خطا در صورت وجود --}}
-                   @error('education')
-                       <div class="text-danger mt-2">{{ $message }}</div>
-                   @enderror
-               </div>
-               <!-- توضیحات کوتاه -->
-               <div class="col-md-12">
-                   <label class="form-label" for="coach-short-desc">توضیحات کوتاه</label>
-                   <textarea class="form-control" id="coach-short-desc" name="short_description" rows="3"
-                       placeholder="توضیحات کوتاه درباره مربی" required></textarea>
-               </div>
-               <!-- شبکه‌های اجتماعی -->
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-social-linkedin">لینکدین</label>
-                   <input class="form-control" type="url" name="linkedin_url" id="coach-social-linkedin"
-                       placeholder="لینک پروفایل لینکدین" />
-               </div>
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-social-instagram">اینستاگرام</label>
-                   <input class="form-control" type="url" name="instagram_url" id="coach-social-instagram"
-                       placeholder="لینک پروفایل اینستاگرام" />
-               </div>
-               <!-- بیوگرافی -->
-               <div class="col-md-12">
-                   <label class="form-label" for="coach-bio">بیوگرافی</label>
-                   <textarea class="form-control" id="coach-bio" name="bio" rows="5" placeholder="بیوگرافی کامل مربی"></textarea>
-               </div>
-               <!-- شماره تلفن -->
-               <!-- شماره تلفن -->
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-phone">شماره تلفن</label>
-                   {{-- افزودن name="phone_number" --}}
-                   <input class="form-control" type="tel" id="coach-phone" name="phone_number" {{-- این ویژگی ضروری است --}}
-                       placeholder="09123456789" pattern="[0-9]{11}" required value="{{ old('phone_number') }}"
-                       {{-- برای حفظ مقدار در صورت خطا --}} />
-                   {{-- نمایش خطای اعتبارسنجی --}}
-                   @error('phone_number')
-                       <div class="text-danger mt-2">{{ $message }}</div>
-                   @enderror
-               </div>
-               <!-- ایمیل -->
-               <!-- ایمیل -->
-               <div class="col-md-6">
-                   <label class="form-label" for="coach-email">ایمیل</label>
-                   <input class="form-control text-end" type="email" id="coach-email" name="email"
-                       {{-- ویژگی name برای ارسال داده ضروری است --}} placeholder="example@domain.com" required value="{{ old('email') }}"
-                       {{-- برای حفظ مقدار قبلی در صورت خطا --}} />
-                   {{-- نمایش خطای اعتبارسنجی مربوط به ایمیل --}}
-                   @error('email')
-                       <div class="text-danger mt-2">{{ $message }}</div>
-                   @enderror
-               </div>
-
-
-               <!-- حوزه‌های تخصصی -->
-               <div class="col-md-12">
-                   <label class="form-label" for="coach-specialties">حوزه‌های تخصصی (با کاما جدا کنید)</label>
-                   <input class="form-control" type="text" id="coach-specialties" name="specialties"
-                       {{-- نام فیلد دیگر آرایه نیست --}} placeholder="مثال: برنامه‌نویسی، طراحی UI/UX، مدیریت پروژه"
-                       
-        
-                       value="{{ old('specialties', implode(', ', $coach->specialties ?? [])) }}" />
-               </div>
-
-
-
-
-               <!-- دکمه‌ها -->
-               <div class="col-12 d-flex justify-content-between">
-                   <button type="button" class="btn btn-label-secondary" onclick="resetForm()">انصراف</button>
-                   <button type="submit" class="btn btn-primary" id="submit-btn">ذخیره</button>
-               </div>
-           </div>
-       </form>
-   </div>
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-   {{-- <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const wrapper = document.getElementById('specialties-wrapper');
-    const addButton = document.getElementById('add-specialty-btn');
-
-    // تابع برای نمایش یا پنهان کردن دکمه‌های حذف
-    function toggleRemoveButtons() {
-        const fields = wrapper.querySelectorAll('.d-flex');
-        // اگر بیشتر از یک فیلد وجود داشت، همه دکمه‌های حذف را نشان بده
-        if (fields.length > 1) {
-            fields.forEach(field => {
-                field.querySelector('.remove-specialty-btn').style.display = 'inline-block';
-            });
-        } 
-        // در غیر این صورت (فقط یک فیلد باقی مانده)، دکمه حذف را مخفی کن
-        else {
-            const firstRemoveBtn = wrapper.querySelector('.remove-specialty-btn');
-            if(firstRemoveBtn) {
-                 firstRemoveBtn.style.display = 'none';
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
             }
+            
+            reader.readAsDataURL(input.files[0]);
         }
     }
-
-    // رویداد کلیک برای دکمه "افزودن تخصص جدید"
-    addButton.addEventListener('click', function() {
-        const newField = `
-            <div class="d-flex align-items-center mb-2">
-                <input 
-                    class="form-control" 
-                    type="text" 
-                    name="specialties[]" 
-                    placeholder="تخصص جدید" />
-                <button type="button" class="btn btn-danger ms-2 remove-specialty-btn">حذف</button>
-            </div>
-        `;
-        wrapper.insertAdjacentHTML('beforeend', newField);
-        toggleRemoveButtons(); // بررسی و نمایش/مخفی کردن دکمه‌های حذف
-    });
-
-    // رویداد کلیک برای دکمه‌های "حذف" (با استفاده از event delegation)
-    wrapper.addEventListener('click', function(e) {
-        if (e.target && e.target.classList.contains('remove-specialty-btn')) {
-            // والد اصلی فیلد (div.d-flex) را حذف کن
-            e.target.parentElement.remove();
-            toggleRemoveButtons(); // بررسی و نمایش/مخفی کردن دکمه‌های حذف
-        }
-    });
-
-    // در بارگذاری اولیه نیز تابع را اجرا کن تا وضعیت اولیه دکمه‌ها درست باشد
-    toggleRemoveButtons();
-});
-</script> --}}
+</script>

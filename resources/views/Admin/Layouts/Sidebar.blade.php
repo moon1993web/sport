@@ -37,12 +37,12 @@
                 <div data-i18n="Classes">کلاس ها</div>
             </a>
         </li>
-        <li class="menu-item">
+        {{-- <li class="menu-item">
             <a class="menu-link" href="Service.html">
                 <i class="menu-icon tf-icons fa fa-briefcase-medical"></i>
                 <div data-i18n="Services">خدمات</div>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item">
             <a class="menu-link" href="{{ route('admin.coaches.index') }}">
                 <i class="menu-icon tf-icons fa fa-user-graduate"></i>

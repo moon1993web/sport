@@ -1,160 +1,195 @@
-@extends('Admin.Layouts.master')
+@extends('Admin.Layouts.Master')
 
 @section('content')
-
-    <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="py-3 mb-4">مدیریت مربیان</h4>
+        <h4 class="py-3 mb-4">
+            <span class="text-muted fw-light">مدیریت محتوا /</span> <span class="fw-bold">لیست مربیان</span>
+        </h4>
 
-        {{-- نمایش پیام‌های موفقیت یا خطا --}}
-        @if (session('success'))
-            <div class="alert alert-success" role="alert">
-                {{ session('success') }}
+        {{-- نمایش پیام‌های سیستم --}}
+        @if (session('swal-success'))
+            <div class="alert alert-success d-flex align-items-center mb-3 shadow-sm border-0" role="alert">
+                <i class="bx bx-check-circle me-2 fs-4"></i>
+                {{ session('swal-success') }}
             </div>
         @endif
+
+        {{-- نمایش خطاهای عمومی --}}
         @if ($errors->any())
-            <div class="alert alert-danger" role="alert">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger mb-3 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-1">
+                    <i class="bx bx-error-circle me-2 fs-4"></i>
+                    <span>لطفاً خطاهای فرم را بررسی کنید:</span>
+                </div>
             </div>
         @endif
-
 
         <div class="row">
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <!-- تب‌ها -->
-                        <ul class="nav nav-tabs" id="coachTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
-                                    data-bs-target="#coach-list" type="button" role="tab" aria-controls="coach-list"
-                                    aria-selected="true">لیست مربیان</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#coach-add"
-                                    type="button" role="tab" aria-controls="coach-add"
-                                    aria-selected="false">افزودن مربی جدید</button>
-                            </li>
-                        </ul>
+            <div class="col-xl-12">
+                <div class="nav-align-top mb-4">
 
-                        <!-- محتوای تب‌ها -->
-                        <div class="tab-content mt-4" id="coachTabsContent">
-                            <!-- تب لیست مربیان -->
-                            <div class="tab-pane fade show active" id="coach-list" role="tabpanel"
-                                aria-labelledby="list-tab">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
+                    {{-- 🟢 هدر تب‌ها --}}
+                    <ul class="nav nav-tabs nav-fill" role="tablist">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link {{ $errors->any() ? '' : 'active' }} py-3" role="tab"
+                                data-bs-toggle="tab" data-bs-target="#navs-list" aria-controls="navs-list"
+                                aria-selected="true">
+                                <i class="bx bx-list-ul me-2"></i> لیست مربیان
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link {{ $errors->any() ? 'active' : '' }} py-3" role="tab"
+                                data-bs-toggle="tab" data-bs-target="#navs-create" aria-controls="navs-create"
+                                aria-selected="false">
+                                <i class="bx bx-user-plus me-2"></i> افزودن مربی جدید
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content shadow-sm rounded-bottom">
+
+                        {{-- 📋 پنل لیست --}}
+                        <div class="tab-pane fade {{ $errors->any() ? '' : 'show active' }}" id="navs-list" role="tabpanel">
+                            <div class="table-responsive text-nowrap" style="min-height: 300px;">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>مربی</th>
+                                            <th>تحصیلات و تخصص</th>
+                                            <th>راه‌های ارتباطی</th>
+                                            <th class="text-center">وضعیت / ترتیب</th>
+                                            <th class="text-center">عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($coaches as $coach)
                                             <tr>
-                                                <th>#</th>
-                                                <th>عکس</th>
-                                                <th>نام و نام خانوادگی</th>
-                                                <th>درجه تحصیلات</th>
-                                                <th>شماره تلفن</th>
-                                                <th>ایمیل</th>
-                                                <th>عملیات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {{-- حلقه برای نمایش داینامیک مربیان --}}
-                                            @forelse ($coaches as $coach)
-                                                <tr>
-                                                    <td>{{ $loop->iteration }}</td>
-                                                    <td>
-                                                        {{-- نمایش تصویر با بررسی وجود آن --}}
-                                                        @if ($coach->image && file_exists(public_path('Admin/assets/img/coach/' . $coach->image)))
-                                                            <img src="{{ asset('Admin/assets/img/coach/' . $coach->image) }}"
-                                                                alt="{{ $coach->full_name }}" class="rounded-circle"
-                                                                width="40" height="40" />
-                                                        @else
-                                                            {{-- تصویر پیش‌فرض در صورت عدم وجود عکس --}}
-                                                            <img src="{{ asset('Admin/assets/img/avatars/default.png') }}"
-                                                                alt="بدون تصویر" class="rounded-circle" width="40"
-                                                                height="40" />
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $coach->full_name }}</td>
-                                                    <td>
-                                                        {{-- نمایش معادل فارسی سطح تحصیلات --}}
-                                                        {{ $educationLevels[$coach->education] ?? 'تعریف نشده' }}
-                                                    </td>
-                                                    <td>{{ $coach->phone_number }}</td>
-                                                    <td>{{ $coach->email }}</td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button
-                                                                class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                                type="button" data-bs-toggle="dropdown"
-                                                                aria-expanded="false">
-                                                                عملیات
-                                                            </button>
-                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                {{-- لینک ویرایش که به صفحه ویرایش منتقل می‌شود --}}
-                                                                <li>
-                                                                    <a class="dropdown-item"
-                                                                        href="{{ route('admin.coaches.edit', $coach->id) }}">
-                                                                        ویرایش
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    {{-- فرم حذف برای امنیت بیشتر --}}
-                                                                    <form
-                                                                        action="{{ route('admin.coaches.destroy', $coach->id) }}"
-                                                                        method="POST" style="display:inline;">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit"
-                                                                            class="dropdown-item text-danger"
-                                                                            onclick="return confirm('آیا از حذف این مربی اطمینان دارید؟')">
-                                                                            حذف
-                                                                        </button>
-                                                                    </form>
-                                                                </li>
-                                                            </ul>
+                                                {{-- 👤 تصویر و نام --}}
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-shrink-0 me-3">
+                                                            <div class="avatar avatar-md">
+                                                                @if ($coach->image)
+                                                                    <img src="{{ asset('storage/' . $coach->image) }}"
+                                                                        alt="{{ $coach->full_name }}"
+                                                                        class="rounded-circle object-fit-cover border">
+                                                                @else
+                                                                    <span class="avatar-initial rounded-circle bg-label-primary">
+                                                                        {{ mb_substr($coach->full_name, 0, 1) }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                {{-- پیام در صورت خالی بودن لیست --}}
-                                                <tr>
-                                                    <td colspan="7" class="text-center">هیچ مربی‌ای یافت نشد.</td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
+                                                        <div>
+                                                            <h6 class="mb-0 fw-bold">{{ $coach->full_name }}</h6>
+                                                            <small class="text-muted">{{ $coach->email }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {{-- 🎓 تخصص‌ها --}}
+                                                <td>
+                                                    <div class="d-flex flex-column gap-1">
+                                                        {{-- بج تحصیلات --}}
+                                                        <span class="badge bg-label-secondary w-px-100 mb-1">
+                                                            <i class="bx bx-hat-school me-1"></i>
+                                                            {{ ucfirst($coach->education) }}
+                                                        </span>
+                                                        
+                                                        {{-- لیست تخصص‌ها --}}
+                                                        <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
+                                                            @if (!empty($coach->specialties) && is_array($coach->specialties))
+                                                                @foreach ($coach->specialties as $spec)
+                                                                    <span class="badge bg-label-info font-size-10">{{ $spec }}</span>
+                                                                @endforeach
+                                                            @else
+                                                                <small class="text-muted">بدون تخصص ثبت شده</small>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {{-- 📞 تماس و سوشال --}}
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="mb-1"><i class="bx bx-phone me-1 text-muted"></i> {{ $coach->phone_number }}</span>
+                                                        <div class="d-flex gap-2 mt-1">
+                                                            @if($coach->instagram_url)
+                                                                <a href="{{ $coach->instagram_url }}" target="_blank" class="text-danger" title="اینستاگرام"><i class='bx bxl-instagram fs-4'></i></a>
+                                                            @endif
+                                                            @if($coach->linkedin_url)
+                                                                <a href="{{ $coach->linkedin_url }}" target="_blank" class="text-primary" title="لینکدین"><i class='bx bxl-linkedin-square fs-4'></i></a>
+                                                            @endif
+                                                            @if(!$coach->instagram_url && !$coach->linkedin_url)
+                                                                <small class="text-muted">-</small>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {{-- 🟢 وضعیت --}}
+                                                <td class="text-center">
+                                                    @if ($coach->is_active)
+                                                        <span class="badge bg-success bg-glow">فعال</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">غیرفعال</span>
+                                                    @endif
+                                                    <div class="mt-2 text-muted small">
+                                                        ترتیب: {{ $coach->sort_order }}
+                                                    </div>
+                                                </td>
+
+                                                {{-- ⚙️ عملیات --}}
+                                                <td class="text-center">
+                                                    <div class="d-inline-flex gap-2">
+                                                        <a href="{{ route('admin.coaches.edit', $coach->id) }}"
+                                                            class="btn btn-sm btn-outline-warning" title="ویرایش">
+                                                            <i class="bx bx-edit-alt"></i>
+                                                        </a>
+
+                                                        <form action="{{ route('admin.coaches.destroy', $coach->id) }}"
+                                                            method="POST" class="d-inline"
+                                                            onsubmit="return confirm('آیا از حذف این مربی اطمینان دارید؟');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                                                                <i class="bx bx-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-5">
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <img src="{{ asset('assets/img/illustrations/empty-box.png') }}" 
+                                                             alt="Empty" width="100" class="mb-3 opacity-50">
+                                                        <p class="text-muted mb-0">هنوز مربی‌ای ثبت نشده است!</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+
+                                {{-- صفحه‌بندی --}}
+                                <div class="mt-4 d-flex justify-content-center">
+                                    {{ $coaches->links('pagination::bootstrap-5') }}
                                 </div>
                             </div>
-
-                            <!-- تب افزودن مربی جدید -->
-                            {{-- فایل فرم ایجاد مربی در اینجا include می‌شود --}}
-                            @include('Admin.Coach.Create')
-
                         </div>
+
+                        {{-- ➕ پنل افزودن (این فایل را در گام بعد می‌سازیم) --}}
+                        <div class="tab-pane fade {{ $errors->any() ? 'show active' : '' }}" id="navs-create" role="tabpanel">
+                            <div class="p-3">
+                                @include('Admin.Coach.Create')
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- اسکریپت برای مدیریت تب فعال پس از ارسال فرم --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // بررسی اینکه آیا باید تب لیست فعال شود یا نه
-            @if (session('show_list_tab') || !$errors->any())
-                // اگر session وجود داشت یا هیچ خطایی نبود، تب لیست فعال شود
-                const listTab = new bootstrap.Tab(document.getElementById('list-tab'));
-                listTab.show();
-            @else
-                // در صورت وجود خطا (معمولاً در فرم ایجاد)، تب افزودن فعال بماند
-                const addTab = new bootstrap.Tab(document.getElementById('add-tab'));
-                addTab.show();
-            @endif
-        });
-    </script>
-@endpush

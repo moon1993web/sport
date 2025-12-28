@@ -4,36 +4,17 @@ namespace App\Models\Content;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coach extends Model
 {
-    use HasFactory;
+  
+  use HasFactory, SoftDeletes;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'coaches';
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    // 🟩 تمام فیلدهایی که قراره از فرم بیاد رو اینجا لیست کردم تا MassAssignmentException نگیریم
     protected $fillable = [
         'full_name',
+        'slug',
         'image',
         'education',
         'short_description',
@@ -43,26 +24,14 @@ class Coach extends Model
         'linkedin_url',
         'instagram_url',
         'specialties',
+        'is_active',
+        'sort_order',
     ];
 
-
-    public static $educationLevels = [
-        'diploma'  => 'دیپلم',
-        'bachelor' => 'کارشناسی',
-        'master'   => 'کارشناسی ارشد',
-        'phd'      => 'دکتری',
-    ];
-
-
-
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
+    // 🟩 تبدیل خودکار داده‌ها موقع گرفتن از دیتابیس
     protected $casts = [
-            'specialties' => 'array',
-        'education' => 'string', // گرچه enum است، کست به string مشکلی ایجاد نمی‌کند
+        'is_active' => 'boolean',     // 0/1 رو به true/false تبدیل می‌کنه
+        'specialties' => 'array',     // JSON دیتابیس رو تبدیل به آرایه PHP می‌کنه
+        'sort_order' => 'integer',
     ];
 }

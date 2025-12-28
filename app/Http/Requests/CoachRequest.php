@@ -12,42 +12,46 @@ class CoachRequest extends FormRequest
      */
     public function authorize(): bool
     {
-
         return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        // $this->coach دسترسی به مدل مربی در زمان ویرایش (update) است
-        // این کار با استفاده از Route Model Binding در کنترلر انجام می‌شود
-        $coachId = $this->coach ? $this->coach->id : null;
+        // دریافت ID مربی از طریق Route Model Binding
+        // اگر روت به صورت resource تعریف شده باشد، پارامتر معمولاً 'coach' است
+        $coachId = $this->route('coach') ? $this->route('coach')->id : null;
 
-        // قوانین اعتبارسنجی برای متد POST (ایجاد مربی جدید)
+        $rules = [
+            // قوانین مشترک یا پیش‌فرض
+            'is_active'   => 'boolean',
+            'sort_order'  => 'nullable|integer|min:0',
+            'slug'        => ['nullable', 'string', 'max:255', Rule::unique('coaches')->ignore($coachId)],
+        ];
+
+        // قوانین اختصاصی برای ایجاد (POST)
         if ($this->isMethod('post')) {
-            return [
+            return array_merge($rules, [
                 'full_name'         => 'required|string|max:255',
                 'image'             => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'education'         => 'required|in:diploma,bachelor,master,phd',
                 'short_description' => 'required|string|max:1000',
                 'bio'               => 'nullable|string',
-                'phone_number'      => ['sometimes', 'required', 'string', 'size:11', Rule::unique('coaches')->ignore($coachId)],
+                'phone_number'      => ['required', 'string', 'size:11', Rule::unique('coaches')->ignore($coachId)],
                 'email'             => 'required|email|unique:coaches,email',
                 'linkedin_url'      => 'nullable|url',
                 'instagram_url'     => 'nullable|url',
-              'specialties' => 'nullable|string|max:500',
-            ];
+                'specialties'       => 'nullable|string|max:500', // فرض بر ورودی متنی (مثلاً جدا شده با ویرگول)
+            ]);
         }
 
-        // قوانین اعتبارسنجی برای متدهای دیگر مانند PUT/PATCH (ویرایش مربی)
+        // قوانین اختصاصی برای ویرایش (PUT/PATCH)
         else {
-            return [
+            return array_merge($rules, [
                 'full_name'         => 'sometimes|required|string|max:255',
-                'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // در ویرایش، آپلود عکس جدید اختیاری است
+                'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'education'         => 'sometimes|required|in:diploma,bachelor,master,phd',
                 'short_description' => 'sometimes|required|string|max:1000',
                 'bio'               => 'nullable|string',
@@ -55,14 +59,13 @@ class CoachRequest extends FormRequest
                 'email'             => ['sometimes', 'required', 'email', Rule::unique('coaches')->ignore($coachId)],
                 'linkedin_url'      => 'nullable|url',
                 'instagram_url'     => 'nullable|url',
-                'specialties'       => 'nullable|array',
-               'specialties' => 'nullable|string|max:500',
-            ];
+                'specialties'       => 'nullable|string|max:500',
+            ]);
         }
     }
 
     /**
-     * Get the custom error messages for validator rules.
+     * پیام‌های فارسی برای خطاها
      */
     public function messages(): array
     {
@@ -70,6 +73,8 @@ class CoachRequest extends FormRequest
             'full_name.required' => 'وارد کردن نام و نام خانوادگی الزامی است.',
             'full_name.string'   => 'نام و نام خانوادگی باید یک رشته متنی باشد.',
             'full_name.max'      => 'نام و نام خانوادگی نباید بیشتر از ۲۵۵ کاراکتر باشد.',
+
+            'slug.unique'        => 'این نامک (Slug) قبلاً استفاده شده است.',
 
             'image.required' => 'انتخاب عکس مربی الزامی است.',
             'image.image'    => 'فایل انتخاب شده باید یک تصویر معتبر باشد.',
@@ -95,8 +100,12 @@ class CoachRequest extends FormRequest
 
             'linkedin_url.url'  => 'فرمت لینکدین وارد شده صحیح نیست.',
             'instagram_url.url' => 'فرمت اینستاگرام وارد شده صحیح نیست.',
-'specialties.string' => 'حوزه‌های تخصصی باید به صورت متنی وارد شوند.',
-'specialties.max'    => 'طول متن حوزه‌های تخصصی بیش از حد مجاز است.',
+
+            'specialties.string' => 'حوزه‌های تخصصی باید به صورت متنی وارد شوند.',
+            'specialties.max'    => 'طول متن حوزه‌های تخصصی بیش از حد مجاز است.',
+
+            'is_active.boolean' => 'وضعیت فعال بودن باید صحیح یا غلط باشد.',
+            'sort_order.integer' => 'ترتیب نمایش باید عدد باشد.',
         ];
     }
 }

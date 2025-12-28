@@ -163,6 +163,29 @@
 {{-- اضافه کردن JS فلت‌پیکر --}}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+
+    function previewCreateImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('create-img-preview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+
+
+
+
+
+
+
     document.addEventListener("DOMContentLoaded", function() {
         flatpickr(".time-input-styled", {
             enableTime: true,
